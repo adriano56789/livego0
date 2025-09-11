@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import MoreHorizIcon from '../icons/MoreHorizIcon';
 import FemaleIcon from '../icons/FemaleIcon';
@@ -26,7 +27,7 @@ const PrivateChatModal: React.FC<PrivateChatModalProps> = ({ onClose, streamerNa
     );
 
     return (
-        <div className="absolute inset-0 bg-black/70 flex items-end z-50" onClick={onClose}>
+        <div className="absolute inset-0 flex items-end z-50" onClick={onClose}>
             <div 
                 className="bg-black w-full h-[90%] rounded-t-2xl flex flex-col text-white" 
                 onClick={e => e.stopPropagation()}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import CloseIcon from '../icons/CloseIcon';
 import CoHostIcon from '../icons/CoHostIcon';
@@ -14,6 +13,7 @@ interface ToolsModalProps {
     onClose: () => void;
     onOpenCoHost: () => void;
     onOpenBeautyPanel: () => void;
+    onOpenClarityPanel: () => void;
 }
 
 const ToolButton: React.FC<{ label: string; icon: React.ReactNode; active?: boolean; highlighted?: boolean; onClick?: () => void; }> = ({ label, icon, active, highlighted, onClick }) => (
@@ -26,7 +26,7 @@ const ToolButton: React.FC<{ label: string; icon: React.ReactNode; active?: bool
     </div>
 );
 
-const ToolsModal: React.FC<ToolsModalProps> = ({ onClose, onOpenCoHost, onOpenBeautyPanel }) => {
+const ToolsModal: React.FC<ToolsModalProps> = ({ onClose, onOpenCoHost, onOpenBeautyPanel, onOpenClarityPanel }) => {
     return (
         <div className="absolute inset-x-0 bottom-0 bg-[#282828] rounded-t-2xl flex flex-col p-4 z-10">
             <div className="flex justify-between items-center mb-6">
@@ -49,7 +49,7 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ onClose, onOpenCoHost, onOpenBe
                         <ToolButton label="Embelezar" icon={<SparklesIcon className="w-7 h-7 text-white"/>} active onClick={onOpenBeautyPanel} />
                         <ToolButton label="Efeito sonoro" icon={<SoundWaveIcon className="w-7 h-7 text-white"/>} />
                         <ToolButton label="Microfone" icon={<MicrophoneIcon className="w-7 h-7 text-black"/>} highlighted />
-                        <ToolButton label="Clareza" icon={<SunIcon className="w-7 h-7 text-white"/>} />
+                        <ToolButton label="Clareza" icon={<SunIcon className="w-7 h-7 text-white"/>} onClick={onOpenClarityPanel} />
                         <ToolButton label="" icon={<ChatBubbleMinusIcon className="w-7 h-7 text-white"/>} active />
                     </div>
                 </div>

@@ -189,7 +189,7 @@ const App: React.FC = () => {
         if (selectedPurchasePackage) {
             screenContent = <PurchaseConfirmationScreen
                 packageInfo={selectedPurchasePackage}
-                onBack={() => setActiveScreen('wallet')}
+                onClose={() => setActiveScreen('wallet')}
             />;
         } else {
             setActiveScreen('wallet');

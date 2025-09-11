@@ -24,6 +24,8 @@ import LiveHeader from '../components/live/LiveHeader';
 import ChatMessage from '../components/live/ChatMessage';
 import EntryChatMessage from '../components/live/EntryChatMessage';
 import { ProfileUser } from './BroadcasterProfileScreen';
+import PurchaseConfirmationScreen from './PurchaseConfirmationScreen';
+import ResolutionPanel from '../components/live/ResolutionPanel';
 
 
 interface LiveStreamRoomScreenProps {
@@ -59,6 +61,9 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive }
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [entryEffect, setEntryEffect] = useState<{ id: number; message: string } | null>(null);
     const [messages, setMessages] = useState<any[]>([]);
+    const [selectedPurchasePackage, setSelectedPurchasePackage] = useState<{ amount: number; price: number } | null>(null);
+    const [isResolutionPanelOpen, setResolutionPanelOpen] = useState(false);
+    const [currentResolution, setCurrentResolution] = useState('480p');
     const videoRef = useRef<HTMLVideoElement>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const startTimeRef = useRef<Date>(new Date());
@@ -140,6 +145,17 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive }
         setBeautyPanelOpen(true);
     };
 
+    const handleOpenClarityPanel = () => {
+        setToolsOpen(false);
+        setResolutionPanelOpen(true);
+    };
+
+    const handleSelectResolution = (resolution: string) => {
+        setCurrentResolution(resolution);
+        setResolutionPanelOpen(false);
+        // Logic to change video quality would go here
+    };
+
     const handleInviteToPK = () => {
         setCoHostModalOpen(false);
         setPKBattleOpen(true);
@@ -171,6 +187,11 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive }
         setViewedUser(null);
         setPrivateChatUser({ name: userToChat.name, avatar: userToChat.avatarUrl });
         setPrivateChatOpen(true);
+    };
+    
+    const handleInitiatePurchase = (pkg: { amount: number; price: number }) => {
+        setSelectedPurchasePackage(pkg);
+        setIsGiftModalOpen(false); // Close gift modal for better UX
     };
 
     return (
@@ -271,11 +292,11 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive }
 
             {/* Modals */}
             {isOnlineUsersOpen && <OnlineUsersModal onClose={() => setOnlineUsersOpen(false)} />}
-            {isToolsOpen && <ToolsModal onClose={() => setToolsOpen(false)} onOpenCoHost={handleOpenCoHostModal} onOpenBeautyPanel={handleOpenBeautyPanel} />}
+            {isToolsOpen && <ToolsModal onClose={() => setToolsOpen(false)} onOpenCoHost={handleOpenCoHostModal} onOpenBeautyPanel={handleOpenBeautyPanel} onOpenClarityPanel={handleOpenClarityPanel} />}
             {isEndConfirmationOpen && <EndStreamConfirmationModal onCancel={() => setEndConfirmationOpen(false)} onConfirm={handleEndStream} />}
             {isProfileModalOpen && <BroadcasterProfileModal onClose={() => setProfileModalOpen(false)} />}
             {isRankingModalOpen && <RankingModal onClose={() => setRankingModalOpen(false)} />}
-            {isGiftModalOpen && <GiftModal onClose={() => setIsGiftModalOpen(false)} />}
+            {isGiftModalOpen && <GiftModal onClose={() => setIsGiftModalOpen(false)} onInitiatePurchase={handleInitiatePurchase} />}
             {isCoHostModalOpen && <CoHostInvitationScreen onClose={() => setCoHostModalOpen(false)} onInvite={handleInviteToPK} />}
             {isBeautyPanelOpen && <BeautyEffectsPanel onClose={() => setBeautyPanelOpen(false)} />}
             {isPrivateChatOpen && <PrivateChatModal onClose={() => setPrivateChatOpen(false)} streamerName={privateChatUser ? privateChatUser.name : "Rainha PK"} streamerAvatar={privateChatUser ? privateChatUser.avatar : "https://picsum.photos/seed/profile/40/40"} />}
@@ -286,6 +307,17 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive }
                     onStartChat={handleStartChat}
                 />
             )}
+            {selectedPurchasePackage && (
+                <PurchaseConfirmationScreen 
+                    packageInfo={selectedPurchasePackage} 
+                    onClose={() => setSelectedPurchasePackage(null)} 
+                />
+            )}
+            {isResolutionPanelOpen && <ResolutionPanel 
+                onClose={() => setResolutionPanelOpen(false)} 
+                onSelectResolution={handleSelectResolution}
+                currentResolution={currentResolution}
+            />}
         </div>
     );
 };

@@ -21,6 +21,10 @@ import EntryChatMessage from '../components/live/EntryChatMessage';
 import BroadcasterProfileModal from '../components/live/BroadcasterProfileModal';
 import { ProfileUser } from './BroadcasterProfileScreen';
 import ChatScreen from './ChatScreen';
+import MoreIcon from '../components/icons/MoreIcon';
+import ToolsModal from '../components/live/ToolsModal';
+import ResolutionPanel from '../components/live/ResolutionPanel';
+import BeautyEffectsPanel from '../components/live/BeautyEffectsPanel';
 
 interface PKBattleScreenProps {
     onClose: () => void;
@@ -87,6 +91,10 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
     const [chatWithUser, setChatWithUser] = useState<ProfileUser | null>(null);
     const [entryEffect, setEntryEffect] = useState<{ id: number; message: string } | null>(null);
     const [messages, setMessages] = useState<any[]>([]);
+    const [isToolsOpen, setIsToolsOpen] = useState(false);
+    const [isBeautyPanelOpen, setBeautyPanelOpen] = useState(false);
+    const [isResolutionPanelOpen, setResolutionPanelOpen] = useState(false);
+    const [currentResolution, setCurrentResolution] = useState('480p');
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
     const myScore = 2018;
@@ -136,6 +144,26 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
 
     const handleInvite = () => {
         setCoHostModalOpen(false);
+    };
+
+    const handleOpenCoHostModal = () => {
+        setIsToolsOpen(false);
+        setCoHostModalOpen(true);
+    };
+
+    const handleOpenBeautyPanel = () => {
+        setIsToolsOpen(false);
+        setBeautyPanelOpen(true);
+    };
+
+    const handleOpenClarityPanel = () => {
+        setIsToolsOpen(false);
+        setResolutionPanelOpen(true);
+    };
+
+    const handleSelectResolution = (resolution: string) => {
+        setCurrentResolution(resolution);
+        setResolutionPanelOpen(false);
     };
 
     const handleStartChat = (userToChat: ProfileUser) => {
@@ -281,7 +309,7 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
                             <button className="bg-gray-500/50 w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"><SendIcon className="w-5 h-5 text-white" /></button>
                             <button onClick={onPrivateChatOpen} className="bg-gray-500/50 w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"><MessageIcon className="w-5 h-5 text-white" /></button>
                             <button onClick={onGiftModalOpen} className="bg-gray-500/50 w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"><GiftIcon className="w-5 h-5 text-yellow-400" /></button>
-                            <button onClick={() => setCoHostModalOpen(true)} className="bg-gray-500/50 w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"><CoHostIcon className="w-6 h-6 text-white" /></button>
+                            <button onClick={() => setIsToolsOpen(true)} className="bg-gray-500/50 w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"><MoreIcon className="w-5 h-5 text-white" /></button>
                         </div>
                     </footer>
                 </div>
@@ -291,6 +319,22 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
             {isEndConfirmationOpen && <EndStreamConfirmationModal onCancel={() => setEndConfirmationOpen(false)} onConfirm={onClose} />}
             {isCoHostModalOpen && <CoHostInvitationScreen onClose={() => setCoHostModalOpen(false)} onInvite={handleInvite} />}
             {profileToView && <BroadcasterProfileModal user={profileToView} onClose={() => setProfileToView(null)} onStartChat={handleStartChat} />}
+            {isToolsOpen && (
+                <ToolsModal 
+                    onClose={() => setIsToolsOpen(false)} 
+                    onOpenCoHost={handleOpenCoHostModal}
+                    onOpenBeautyPanel={handleOpenBeautyPanel}
+                    onOpenClarityPanel={handleOpenClarityPanel}
+                />
+            )}
+            {isBeautyPanelOpen && <BeautyEffectsPanel onClose={() => setBeautyPanelOpen(false)} />}
+            {isResolutionPanelOpen && (
+                <ResolutionPanel 
+                    onClose={() => setResolutionPanelOpen(false)}
+                    onSelectResolution={handleSelectResolution}
+                    currentResolution={currentResolution}
+                />
+            )}
             {chatWithUser && (
                 <div className="absolute inset-0 z-40 bg-black">
                     <ChatScreen

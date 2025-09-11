@@ -11,7 +11,7 @@ interface CategorySelectionModalProps {
 
 const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({ onClose, onSelectCategory, currentCategory }) => {
     return (
-        <div className="absolute inset-0 bg-black/70 flex items-end z-30" onClick={onClose}>
+        <div className="absolute inset-0 flex items-end z-30" onClick={onClose}>
             <div 
                 className="bg-[#2a2a2a] w-full rounded-t-2xl p-4 text-white"
                 onClick={e => e.stopPropagation()}

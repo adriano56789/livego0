@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ChevronLeftIcon from '../icons/ChevronLeftIcon';
 import DiamondIcon from '../icons/DiamondIcon';
@@ -7,6 +8,7 @@ import QuestionMarkCircleIcon from '../icons/QuestionMarkCircleIcon';
 
 interface PurchaseDiamondsModalProps {
     onClose: () => void;
+    onPurchaseClick: (pkg: { amount: number; price: number }) => void;
 }
 
 const diamondPackages = [
@@ -18,8 +20,8 @@ const diamondPackages = [
     { amount: 10500, price: 499.99 },
 ];
 
-const PurchaseCard: React.FC<{ amount: number; price: number }> = ({ amount, price }) => (
-    <div className="bg-[#282828] rounded-lg p-4 flex flex-col items-center justify-center text-center">
+const PurchaseCard: React.FC<{ amount: number; price: number; onClick: () => void; }> = ({ amount, price, onClick }) => (
+    <button onClick={onClick} className="bg-[#282828] rounded-lg p-4 flex flex-col items-center justify-center text-center hover:bg-[#3a3a3a] transition-colors w-full">
         <div className="flex items-center space-x-2">
             <DiamondIcon className="w-6 h-6" />
             <span className="text-xl font-bold">{amount.toLocaleString('pt-BR')}</span>
@@ -27,10 +29,10 @@ const PurchaseCard: React.FC<{ amount: number; price: number }> = ({ amount, pri
         <div className="mt-2 bg-[#3a3a3a] text-white text-sm font-semibold py-1 px-4 rounded-full">
             R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
         </div>
-    </div>
+    </button>
 );
 
-const PurchaseDiamondsModal: React.FC<PurchaseDiamondsModalProps> = ({ onClose }) => {
+const PurchaseDiamondsModal: React.FC<PurchaseDiamondsModalProps> = ({ onClose, onPurchaseClick }) => {
     return (
         <div className="absolute inset-0 bg-[#121212] min-h-screen text-white z-30">
             <header className="p-4 flex items-center justify-between border-b border-gray-800">
@@ -77,7 +79,7 @@ const PurchaseDiamondsModal: React.FC<PurchaseDiamondsModalProps> = ({ onClose }
 
                 <div className="grid grid-cols-2 gap-3 mt-4">
                     {diamondPackages.map(pkg => (
-                        <PurchaseCard key={pkg.amount} amount={pkg.amount} price={pkg.price} />
+                        <PurchaseCard key={pkg.amount} amount={pkg.amount} price={pkg.price} onClick={() => onPurchaseClick(pkg)} />
                     ))}
                 </div>
             </main>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import DiamondIcon from '../icons/DiamondIcon';
 import ChevronRightIcon from '../icons/ChevronRightIcon';
@@ -31,9 +32,10 @@ const quantities = [1, 10, 30, 66, 99];
 
 interface GiftModalProps {
     onClose: () => void;
+    onInitiatePurchase: (pkg: { amount: number; price: number }) => void;
 }
 
-const GiftModal: React.FC<GiftModalProps> = ({ onClose }) => {
+const GiftModal: React.FC<GiftModalProps> = ({ onClose, onInitiatePurchase }) => {
     const [selectedGift, setSelectedGift] = useState(gifts[0]);
     const [selectedQuantity, setSelectedQuantity] = useState(quantities[0]);
     const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
@@ -43,11 +45,11 @@ const GiftModal: React.FC<GiftModalProps> = ({ onClose }) => {
     };
     
     if (isPurchaseModalOpen) {
-        return <PurchaseDiamondsModal onClose={() => setPurchaseModalOpen(false)} />;
+        return <PurchaseDiamondsModal onClose={() => setPurchaseModalOpen(false)} onPurchaseClick={onInitiatePurchase} />;
     }
 
     return (
-        <div className="absolute inset-0 bg-black/40 flex flex-col justify-end z-20" onClick={onClose}>
+        <div className="absolute inset-0 flex flex-col justify-end z-20" onClick={onClose}>
             <div className="bg-[#1e1e1e] w-full rounded-t-2xl pt-4 text-white" onClick={e => e.stopPropagation()}>
                 <div className="grid grid-cols-4 gap-4 px-4 h-40 overflow-y-auto no-scrollbar">
                     {gifts.map(gift => (
