@@ -1,0 +1,8 @@
+{
+  "name": "LiveGo Streaming App",
+  "description": "A web application interface for LiveGo, a streaming platform, featuring a login screen and a browsable list of live streams.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
