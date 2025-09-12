@@ -4,10 +4,15 @@ import Header from '../components/Header';
 import StreamCard from '../components/StreamCard';
 import { MOCK_STREAMS } from '../constants';
 
-const HomeScreen: React.FC = () => {
+interface HomeScreenProps {
+  setActiveScreen: (screen: string) => void;
+  onOpenReminderPanel: () => void;
+}
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ setActiveScreen, onOpenReminderPanel }) => {
   return (
     <div className="bg-[#121212] pb-24">
-      <Header />
+      <Header setActiveScreen={setActiveScreen} onOpenReminderPanel={onOpenReminderPanel} />
       <main className="p-2">
         <div className="grid grid-cols-2 gap-2">
           {MOCK_STREAMS.map((stream) => (

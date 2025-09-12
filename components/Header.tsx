@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { CATEGORIES } from '../constants';
 import SearchIcon from './icons/SearchIcon';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  setActiveScreen: (screen: string) => void;
+  onOpenReminderPanel: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ setActiveScreen, onOpenReminderPanel }) => {
   const [activeCategory, setActiveCategory] = useState('PK');
 
   return (
@@ -10,10 +15,14 @@ const Header: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-3xl font-bold">LiveGo</h1>
         <div className="flex items-center space-x-4">
-          <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center font-bold text-lg">
+          <button 
+            onClick={onOpenReminderPanel}
+            className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center font-bold text-lg"
+            aria-label="Open reminders"
+          >
             T
-          </div>
-          <button aria-label="Search">
+          </button>
+          <button onClick={() => setActiveScreen('searchFriends')} aria-label="Search">
             <SearchIcon className="w-7 h-7 text-white" />
           </button>
         </div>

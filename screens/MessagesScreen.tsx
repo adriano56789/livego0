@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import SearchIcon from '../components/icons/SearchIcon';
-import PlusIcon from '../components/icons/PlusIcon';
 import UserGroupIcon from '../components/icons/UserGroupIcon';
 import MaleIcon from '../components/icons/MaleIcon';
 import FemaleIcon from '../components/icons/FemaleIcon';
@@ -29,7 +27,7 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({ setActiveScreen }) => {
                     <img src={convo.avatar} alt={convo.name} className="w-14 h-14 rounded-full" />
                     <div className="flex-grow">
                         <div className="flex justify-between items-center">
-                            <p className="font-semibold text-white flex items-center">{convo.name} {convo.icons && <UserGroupIcon className="w-4 h-4 ml-2 text-yellow-500" />}</p>
+                            <p className="font-semibold text-white flex items-center">{convo.name} 👑</p>
                             <p className="text-xs text-gray-500">{convo.time}</p>
                         </div>
                         <div className="flex items-center space-x-1 mt-1">
@@ -88,14 +86,6 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({ setActiveScreen }) => {
                          <button onClick={() => setActiveTab('friends')} className={`text-2xl font-bold ${activeTab === 'friends' ? 'text-white' : 'text-gray-600'}`}>
                             Amigos
                             {activeTab === 'friends' && <div className="h-1 w-8 bg-white mx-auto mt-1 rounded-full"></div>}
-                        </button>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <button onClick={() => setActiveScreen('searchFriends')} aria-label="Search">
-                            <SearchIcon className="w-7 h-7 text-white" />
-                        </button>
-                         <button onClick={() => setActiveScreen('searchFriends')} aria-label="Add Friend">
-                            <PlusIcon className="w-7 h-7 text-white" />
                         </button>
                     </div>
                 </div>

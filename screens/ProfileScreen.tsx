@@ -5,18 +5,15 @@ import LevelBadgeIcon from '../components/icons/LevelBadgeIcon';
 import CopyIcon from '../components/icons/CopyIcon';
 import CoinIcon from '../components/icons/CoinIcon';
 import DiamondIcon from '../components/icons/DiamondIcon';
-import ArrowUpIcon from '../components/icons/ArrowUpIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
-import ShopIcon from '../components/icons/ShopIcon';
-import StarIcon from '../components/icons/StarIcon';
-import TopFansIcon from '../components/icons/TopFansIcon';
-import ShieldIcon from '../components/icons/ShieldIcon';
-import LiveAppIcon from '../components/icons/LiveAppIcon';
-import CustomerServiceIcon from '../components/icons/CustomerServiceIcon';
-import ReportIcon from '../components/icons/ReportIcon';
-import HelpIcon from '../components/icons/HelpIcon';
 import BlockIcon from '../components/icons/BlockIcon';
 import SettingsIcon from '../components/icons/SettingsIcon';
+import CubeIcon from '../components/icons/CubeIcon';
+import TrophyIcon from '../components/icons/TrophyIcon';
+import UserGroupIcon from '../components/icons/UserGroupIcon';
+import LockClosedIcon from '../components/icons/LockClosedIcon';
+import EnvelopeIcon from '../components/icons/EnvelopeIcon';
+import QuestionMarkCircleIcon from '../components/icons/QuestionMarkCircleIcon';
 
 interface ProfileScreenProps {
     setActiveScreen: (screen: string) => void;
@@ -42,15 +39,13 @@ const MenuItem: React.FC<{ icon: React.ReactNode; label: string; onClick?: () =>
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ setActiveScreen }) => {
     const menuItems = [
-        { icon: <ShopIcon className="w-6 h-6 text-blue-400" />, label: "Loja", screen: 'shop' },
-        { icon: <StarIcon className="w-6 h-6 text-yellow-400" />, label: "Meu Nível", screen: 'level' },
-        { icon: <TopFansIcon className="w-6 h-6 text-yellow-600" />, label: "Top Fãs", screen: 'topFans' },
-        { icon: <ShieldIcon className="w-6 h-6 text-blue-500" />, label: "Proteção de Avatar", screen: 'avatarProtection' },
-        { icon: <LiveAppIcon className="w-6 h-6 text-red-500" />, label: "Aplicativo ao Vivo", screen: 'liveApp' },
-        { icon: <CustomerServiceIcon className="w-6 h-6 text-gray-300" />, label: "Atendimento ao Cliente", screen: 'customerService' },
-        { icon: <ReportIcon className="w-6 h-6 text-gray-300" />, label: "Denúncias e Sugestões", screen: 'reports' },
-        { icon: <HelpIcon className="w-6 h-6 text-gray-300" />, label: "Central de Ajuda", screen: 'helpCenter' },
-        { icon: <BlockIcon className="w-6 h-6 text-gray-300" />, label: "Lista de Bloqueio", screen: 'blockList' },
+        { icon: <CubeIcon className="w-6 h-6 text-blue-400" />, label: "Mercado", screen: 'shop' },
+        { icon: <TrophyIcon className="w-6 h-6 text-yellow-400" />, label: "Minha Patente", screen: 'level' },
+        { icon: <UserGroupIcon className="w-6 h-6 text-yellow-600" />, label: "Fãs de Destaque", screen: 'topFans' },
+        { icon: <LockClosedIcon className="w-6 h-6 text-blue-500" />, label: "Proteção de Perfil", screen: 'avatarProtection' },
+        { icon: <EnvelopeIcon className="w-6 h-6 text-gray-300" />, label: "Feedback e Denúncias", screen: 'reports' },
+        { icon: <QuestionMarkCircleIcon className="w-6 h-6 text-gray-300" />, label: "Suporte", screen: 'helpCenter' },
+        { icon: <BlockIcon className="w-6 h-6 text-gray-300" />, label: "Usuários Bloqueados", screen: 'blockList' },
         { icon: <SettingsIcon className="w-6 h-6 text-gray-300" />, label: "Configurações", screen: 'settings' },
     ];
 

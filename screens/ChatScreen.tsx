@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import MoreHorizIcon from '../components/icons/MoreHorizIcon';
@@ -36,16 +37,18 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ user, onBack, onOpenProfile }) 
                     </button>
                     <button onClick={() => onOpenProfile(user)} className="text-left">
                         <h1 className="text-lg font-semibold">{user.name}</h1>
-                        <div className="flex items-center space-x-1 mt-1">
-                            <div className={`flex items-center ${user.gender === 'male' ? 'bg-blue-500' : 'bg-pink-500'} rounded-full px-1.5 py-0.5 text-xs font-semibold space-x-1 text-white`}>
-                                {user.gender === 'male' ? <MaleIcon className="w-2.5 h-2.5"/> : <FemaleIcon className="w-2.5 h-2.5"/>}
-                                <span>{user.age}</span>
+                        {user.id !== 'support-01' && (
+                            <div className="flex items-center space-x-1 mt-1">
+                                <div className={`flex items-center ${user.gender === 'male' ? 'bg-blue-500' : 'bg-pink-500'} rounded-full px-1.5 py-0.5 text-xs font-semibold space-x-1 text-white`}>
+                                    {user.gender === 'male' ? <MaleIcon className="w-2.5 h-2.5"/> : <FemaleIcon className="w-2.5 h-2.5"/>}
+                                    <span>{user.age}</span>
+                                </div>
+                                <div className="flex items-center bg-orange-500 rounded-full px-1.5 py-0.5 text-xs font-semibold space-x-1 text-white">
+                                    <LevelBadgeIcon className="w-2.5 h-2.5" />
+                                    <span>{user.level}</span>
+                                </div>
                             </div>
-                            <div className="flex items-center bg-orange-500 rounded-full px-1.5 py-0.5 text-xs font-semibold space-x-1 text-white">
-                                <LevelBadgeIcon className="w-2.5 h-2.5" />
-                                <span>{user.level}</span>
-                            </div>
-                        </div>
+                        )}
                         <p className="text-xs text-green-400 mt-1">On-line</p>
                     </button>
                 </div>

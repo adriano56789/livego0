@@ -11,12 +11,13 @@
         overscroll-behavior: none;
         background-color: #121212;
       }
-      /* Hide scrollbar for Chrome, Safari and Opera */
-      .no-scrollbar::-webkit-scrollbar {
+      /* Hide scrollbar for all elements */
+      /* Chrome, Safari and Opera */
+      ::-webkit-scrollbar {
           display: none;
       }
-      /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
+      /* IE, Edge and Firefox */
+      * {
           -ms-overflow-style: none;  /* IE and Edge */
           scrollbar-width: none;  /* Firefox */
       }
@@ -107,6 +108,35 @@
       .animate-fade-in {
         animation: fadeIn 0.2s ease-out forwards;
         transform-origin: bottom left;
+      }
+      
+      @keyframes fadeInOverlay {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .animate-fade-in-overlay {
+          animation: fadeInOverlay 0.3s ease-out forwards;
+      }
+      @keyframes slideInFromRight {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+      }
+      .animate-slide-in-right {
+        animation: slideInFromRight 0.3s ease-out forwards;
+      }
+      @keyframes slideOutToRight {
+        from { transform: translateX(0); }
+        to { transform: translateX(100%); }
+      }
+      .animate-slide-out-right {
+        animation: slideOutToRight 0.3s ease-out forwards;
+      }
+      @keyframes fadeOutOverlay {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      .animate-fade-out-overlay {
+        animation: fadeOutOverlay 0.3s ease-out forwards;
       }
     </style>
   <script type="importmap">

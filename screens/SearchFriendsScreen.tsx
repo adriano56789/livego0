@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import SearchIcon from '../components/icons/SearchIcon';
@@ -11,7 +10,7 @@ const SearchFriendsScreen: React.FC<SearchFriendsScreenProps> = ({ setActiveScre
     return (
         <div className="bg-black min-h-screen text-white flex flex-col">
             <header className="p-4 flex items-center space-x-3 border-b border-gray-800">
-                <button onClick={() => setActiveScreen('messages')} aria-label="Back to messages">
+                <button onClick={() => setActiveScreen('home')} aria-label="Back to home">
                     <ChevronLeftIcon className="w-6 h-6" />
                 </button>
                 <div className="relative flex-grow">

@@ -36,6 +36,9 @@ import GoLiveScreen from './screens/GoLiveScreen';
 import LiveStreamRoomScreen from './screens/LiveStreamRoomScreen';
 import StreamEndedSummaryScreen from './screens/StreamEndedSummaryScreen';
 import PurchaseConfirmationScreen from './screens/PurchaseConfirmationScreen';
+import ReminderScreen from './screens/ReminderScreen';
+import HelpCenterScreen from './screens/HelpCenterScreen';
+import HelpTopicScreen from './screens/HelpTopicScreen';
 
 // Fix: Create a mock user to pass to ChatScreen, as the current navigation doesn't provide it.
 const mockChatUser: ProfileUser = {
@@ -57,6 +60,25 @@ const mockChatUser: ProfileUser = {
     isLive: true,
 };
 
+const mockSupportUser: ProfileUser = {
+    name: 'Suporte LiveGo',
+    avatarUrl: 'https://picsum.photos/seed/support/150/150',
+    coverUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop',
+    country: 'br',
+    id: 'support-01',
+    age: 0,
+    gender: 'female',
+    level: 99,
+    location: 'Online',
+    distance: '0 km',
+    fans: 'N/A',
+    following: 'N/A',
+    receptores: 'N/A',
+    enviados: 'N/A',
+    topFansAvatars: [],
+    isLive: false,
+};
+
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -66,6 +88,8 @@ const App: React.FC = () => {
   const [showStreamSummary, setShowStreamSummary] = useState(false);
   const [streamDuration, setStreamDuration] = useState('00:00:00.0000000000');
   const [selectedPurchasePackage, setSelectedPurchasePackage] = useState<{ amount: number; price: number } | null>(null);
+  const [isReminderPanelOpen, setReminderPanelOpen] = useState(false);
+  const [selectedHelpTopic, setSelectedHelpTopic] = useState<string | null>(null);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -92,6 +116,11 @@ const App: React.FC = () => {
     setActiveScreen('purchaseConfirmation');
   };
 
+  const handleSelectHelpTopic = (topic: string) => {
+    setSelectedHelpTopic(topic);
+    setActiveScreen('helpTopic');
+  };
+
   const renderContent = () => {
     if (!isAuthenticated) {
       return <LoginScreen onLogin={handleLogin} />;
@@ -108,7 +137,7 @@ const App: React.FC = () => {
     let screenContent;
     switch (activeScreen) {
       case 'home':
-        screenContent = <HomeScreen />;
+        screenContent = <HomeScreen setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
         break;
       case 'profile':
         screenContent = <ProfileScreen setActiveScreen={setActiveScreen} />;
@@ -206,7 +235,15 @@ const App: React.FC = () => {
         screenContent = <PlaceholderScreen setActiveScreen={setActiveScreen} screenName="Atendimento ao Cliente" />;
         break;
       case 'helpCenter':
-        screenContent = <PlaceholderScreen setActiveScreen={setActiveScreen} screenName="Central de Ajuda" />;
+        screenContent = <HelpCenterScreen setActiveScreen={setActiveScreen} onSelectTopic={handleSelectHelpTopic} />;
+        break;
+      case 'helpTopic':
+        if (selectedHelpTopic) {
+          screenContent = <HelpTopicScreen setActiveScreen={setActiveScreen} topic={selectedHelpTopic} />;
+        } else {
+          setActiveScreen('helpCenter');
+          screenContent = null;
+        }
         break;
       case 'messages':
         screenContent = <MessagesScreen setActiveScreen={setActiveScreen} />;
@@ -226,11 +263,20 @@ const App: React.FC = () => {
           />
         );
         break;
+      case 'supportChat':
+        screenContent = (
+          <ChatScreen
+            user={mockSupportUser}
+            onBack={() => setActiveScreen('helpCenter')}
+            onOpenProfile={() => {}} // No profile for support agent
+          />
+        );
+        break;
       case 'searchFriends':
         screenContent = <SearchFriendsScreen setActiveScreen={setActiveScreen} />;
         break;
       default:
-        screenContent = <HomeScreen />;
+        screenContent = <HomeScreen setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
     }
 
     const showBottomNav = activeScreen === 'home' || activeScreen === 'profile' || activeScreen === 'messages';
@@ -240,6 +286,7 @@ const App: React.FC = () => {
         {screenContent}
         {showBottomNav && <BottomNav activeScreen={activeScreen} setActiveScreen={setActiveScreen} onGoLiveClick={() => setIsGoLiveOpen(true)} />}
         {isGoLiveOpen && <GoLiveScreen onClose={() => setIsGoLiveOpen(false)} onStartLive={handleStartLive} />}
+        {isReminderPanelOpen && <ReminderScreen onClose={() => setReminderPanelOpen(false)} />}
       </div>
     );
   };
