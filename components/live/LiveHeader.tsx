@@ -1,24 +1,30 @@
+
 import React from 'react';
 import CloseIcon from '../icons/CloseIcon';
 import SoundWaveIcon from '../icons/SoundWaveIcon';
 import UserGroupIcon from '../icons/UserGroupIcon';
 import PlusIcon from '../icons/PlusIcon';
 import UserIcon from '../icons/UserIcon';
+import LockIcon from '../icons/LockIcon';
 
 interface LiveHeaderProps {
     onClose: () => void;
     onProfileClick: () => void;
     onOnlineUsersClick: () => void;
+    isPrivate?: boolean;
 }
 
-const LiveHeader: React.FC<LiveHeaderProps> = ({ onClose, onProfileClick, onOnlineUsersClick }) => {
+const LiveHeader: React.FC<LiveHeaderProps> = ({ onClose, onProfileClick, onOnlineUsersClick, isPrivate }) => {
     return (
         <header className="p-3 flex justify-between items-start z-10 flex-shrink-0">
             <div className="flex items-center space-x-2">
                 <button onClick={onProfileClick} className="bg-black/30 rounded-full p-1 flex items-center space-x-2">
                     <img src="https://picsum.photos/seed/profile/40/40" alt="User avatar" className="w-10 h-10 rounded-full" />
                     <div className="pr-4">
-                        <p className="font-semibold text-sm">Rainha PK</p>
+                        <div className="flex items-center">
+                            <p className="font-semibold text-sm">Rainha PK</p>
+                            {isPrivate && <LockIcon className="w-3 h-3 ml-1 text-yellow-400"/>}
+                        </div>
                         <div className="flex items-center space-x-1 text-xs text-gray-300">
                             <UserIcon className="w-3 h-3" />
                             <span>0</span>

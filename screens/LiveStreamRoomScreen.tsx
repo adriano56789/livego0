@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import OnlineUsersModal from '../components/live/OnlineUsersModal';
 import ToolsModal from '../components/live/ToolsModal';
@@ -30,6 +31,7 @@ import ResolutionPanel from '../components/live/ResolutionPanel';
 
 interface LiveStreamRoomScreenProps {
     onEndLive: (duration: string) => void;
+    isPrivate: boolean;
 }
 
 const mockMessages = [
@@ -45,7 +47,7 @@ const mockMessages = [
     { id: 7, type: 'chat', user: 'Apoiador Forte', age: 32, gender: 'female', level: 12, message: 'É isso aí!', avatar: 'https://i.pravatar.cc/150?img=16' },
 ];
 
-const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive }) => {
+const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, isPrivate }) => {
     const [isOnlineUsersOpen, setOnlineUsersOpen] = useState(false);
     const [isToolsOpen, setToolsOpen] = useState(false);
     const [isEndConfirmationOpen, setEndConfirmationOpen] = useState(false);
@@ -224,6 +226,7 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive }
                                 onClose={() => setEndConfirmationOpen(true)}
                                 onProfileClick={() => setProfileModalOpen(true)}
                                 onOnlineUsersClick={() => setOnlineUsersOpen(true)}
+                                isPrivate={isPrivate}
                             />
 
                             <main className="flex-grow flex flex-col justify-between overflow-hidden relative">

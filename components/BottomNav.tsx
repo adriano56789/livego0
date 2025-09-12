@@ -9,6 +9,7 @@ interface BottomNavProps {
     activeScreen: string;
     setActiveScreen: (screen: string) => void;
     onGoLiveClick: () => void;
+    onRefreshStreams: () => void;
 }
 
 const NavItem: React.FC<{ icon: React.ReactNode; label: string; active?: boolean; notification?: boolean; onClick?: () => void; }> = ({ icon, label, active, notification, onClick }) => (
@@ -21,12 +22,12 @@ const NavItem: React.FC<{ icon: React.ReactNode; label: string; active?: boolean
     </button>
 );
 
-const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, setActiveScreen, onGoLiveClick }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, setActiveScreen, onGoLiveClick, onRefreshStreams }) => {
     return (
         <footer className="fixed bottom-0 left-0 right-0 bg-[#1e1e1e] border-t border-gray-700 p-2 z-20">
             <div className="flex justify-around items-center max-w-md mx-auto">
                 <NavItem icon={<HomeIcon className="w-6 h-6" />} label="Ao vivo" active={activeScreen === 'home'} onClick={() => setActiveScreen('home')} />
-                <NavItem icon={<VideoIcon className="w-6 h-6" />} label="Vídeo" />
+                <NavItem icon={<VideoIcon className="w-6 h-6" />} label="Vídeo" onClick={onRefreshStreams} />
                 <button onClick={onGoLiveClick} className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-full shadow-lg -translate-y-4">
                     <PlayIcon />
                 </button>

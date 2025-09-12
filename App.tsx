@@ -39,6 +39,8 @@ import PurchaseConfirmationScreen from './screens/PurchaseConfirmationScreen';
 import ReminderScreen from './screens/ReminderScreen';
 import HelpCenterScreen from './screens/HelpCenterScreen';
 import HelpTopicScreen from './screens/HelpTopicScreen';
+import { Stream } from './types';
+import { MOCK_STREAMS } from './constants';
 
 // Fix: Create a mock user to pass to ChatScreen, as the current navigation doesn't provide it.
 const mockChatUser: ProfileUser = {
@@ -90,12 +92,15 @@ const App: React.FC = () => {
   const [selectedPurchasePackage, setSelectedPurchasePackage] = useState<{ amount: number; price: number } | null>(null);
   const [isReminderPanelOpen, setReminderPanelOpen] = useState(false);
   const [selectedHelpTopic, setSelectedHelpTopic] = useState<string | null>(null);
+  const [streams, setStreams] = useState<Stream[]>(MOCK_STREAMS);
+  const [isStreamPrivate, setIsStreamPrivate] = useState(false);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
   };
   
-  const handleStartLive = () => {
+  const handleStartLive = (isPrivate: boolean) => {
+    setIsStreamPrivate(isPrivate);
     setIsGoLiveOpen(false);
     setIsLive(true);
   };
@@ -121,6 +126,11 @@ const App: React.FC = () => {
     setActiveScreen('helpTopic');
   };
 
+  const handleRefreshStreams = () => {
+    // Simple shuffle to simulate a refresh
+    setStreams(prevStreams => [...prevStreams].sort(() => Math.random() - 0.5));
+  };
+
   const renderContent = () => {
     if (!isAuthenticated) {
       return <LoginScreen onLogin={handleLogin} />;
@@ -131,13 +141,13 @@ const App: React.FC = () => {
     }
 
     if (isLive) {
-      return <LiveStreamRoomScreen onEndLive={handleEndLive} />;
+      return <LiveStreamRoomScreen onEndLive={handleEndLive} isPrivate={isStreamPrivate} />;
     }
 
     let screenContent;
     switch (activeScreen) {
       case 'home':
-        screenContent = <HomeScreen setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
+        screenContent = <HomeScreen streams={streams} setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
         break;
       case 'profile':
         screenContent = <ProfileScreen setActiveScreen={setActiveScreen} />;
@@ -276,7 +286,7 @@ const App: React.FC = () => {
         screenContent = <SearchFriendsScreen setActiveScreen={setActiveScreen} />;
         break;
       default:
-        screenContent = <HomeScreen setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
+        screenContent = <HomeScreen streams={streams} setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
     }
 
     const showBottomNav = activeScreen === 'home' || activeScreen === 'profile' || activeScreen === 'messages';
@@ -284,7 +294,7 @@ const App: React.FC = () => {
     return (
       <div className="relative min-h-screen">
         {screenContent}
-        {showBottomNav && <BottomNav activeScreen={activeScreen} setActiveScreen={setActiveScreen} onGoLiveClick={() => setIsGoLiveOpen(true)} />}
+        {showBottomNav && <BottomNav activeScreen={activeScreen} setActiveScreen={setActiveScreen} onGoLiveClick={() => setIsGoLiveOpen(true)} onRefreshStreams={handleRefreshStreams} />}
         {isGoLiveOpen && <GoLiveScreen onClose={() => setIsGoLiveOpen(false)} onStartLive={handleStartLive} />}
         {isReminderPanelOpen && <ReminderScreen onClose={() => setReminderPanelOpen(false)} />}
       </div>

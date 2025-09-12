@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import CloseIcon from '../components/icons/CloseIcon';
 import PlusIcon from '../components/icons/PlusIcon';
@@ -9,11 +10,12 @@ import ExpandIcon from '../components/icons/ExpandIcon';
 import BeautyEffectsPanel from '../components/live/BeautyEffectsPanel';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import CategorySelectionModal from '../components/live/CategorySelectionModal';
+import LockClosedIcon from '../components/icons/LockClosedIcon';
 
 
 interface GoLiveScreenProps {
   onClose: () => void;
-  onStartLive: () => void;
+  onStartLive: (isPrivate: boolean) => void;
 }
 
 const Toggle: React.FC<{ checked: boolean; onToggle: () => void; }> = ({ checked, onToggle }) => (
@@ -38,6 +40,7 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ onClose, onStartLive }) => 
   const [isUiVisible, setIsUiVisible] = useState(true);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Popular');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -126,9 +129,21 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ onClose, onStartLive }) => 
               </div>
               
               <div className="flex items-center space-x-2 mt-4">
-                <button className="bg-[#3a3a3a]/90 px-3 py-1.5 rounded-full text-sm flex items-center space-x-1.5">
-                  <UserGroupIcon className="w-4 h-4" />
-                  <span>Sala Pública</span>
+                <button
+                  onClick={() => setIsPrivate(!isPrivate)}
+                  className="bg-[#3a3a3a]/90 px-3 py-1.5 rounded-full text-sm flex items-center space-x-1.5"
+                >
+                  {isPrivate ? (
+                    <>
+                      <LockClosedIcon className="w-4 h-4 text-yellow-400" />
+                      <span className="text-yellow-400">Sala Privada</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserGroupIcon className="w-4 h-4" />
+                      <span>Sala Pública</span>
+                    </>
+                  )}
                 </button>
                 <button onClick={() => setIsCategoryModalOpen(true)} className="bg-[#3a3a3a]/90 px-3 py-1.5 rounded-full text-sm">
                   {selectedCategory}
@@ -170,7 +185,7 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ onClose, onStartLive }) => 
         >
           {isUiVisible && <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/50 to-transparent -z-10 pointer-events-none" />}
           <div className="pb-4">
-            <button onClick={onStartLive} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-full text-lg shadow-lg shadow-green-500/30">
+            <button onClick={() => onStartLive(isPrivate)} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-full text-lg shadow-lg shadow-green-500/30">
               Iniciar Transmissão
             </button>
           </div>

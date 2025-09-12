@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ setActiveScreen, onOpenReminderPanel })
           </button>
         </div>
       </div>
-      <nav className="overflow-x-auto whitespace-nowrap pb-2 -mb-2 no-scrollbar">
+      <nav className="overflow-x-none whitespace-nowrap pb-2 -mb-2 no-scrollbar">
         <ul className="flex items-center space-x-5 text-gray-400">
           {CATEGORIES.map((category) => (
             <li key={category}>
