@@ -1,22 +1,25 @@
 
 import React from 'react';
-import MaleIcon from '../components/MaleIcon';
-import LevelBadgeIcon from '../components/LevelBadgeIcon';
-import CopyIcon from '../components/CopyIcon';
-import CoinIcon from '../components/CoinIcon';
-import DiamondIcon from '../components/DiamondIcon';
-import ChevronRightIcon from '../components/ChevronRightIcon';
-import BlockIcon from '../components/BlockIcon';
-import SettingsIcon from '../components/SettingsIcon';
-import CubeIcon from '../components/CubeIcon';
-import TrophyIcon from '../components/TrophyIcon';
-import UserGroupIcon from '../components/UserGroupIcon';
-import LockClosedIcon from '../components/LockClosedIcon';
-import EnvelopeIcon from '../components/EnvelopeIcon';
-import QuestionMarkCircleIcon from '../components/QuestionMarkCircleIcon';
+import MaleIcon from '../components/icons/MaleIcon';
+import LevelBadgeIcon from '../components/icons/LevelBadgeIcon';
+import CopyIcon from '../components/icons/CopyIcon';
+import CoinIcon from '../components/icons/CoinIcon';
+import DiamondIcon from '../components/icons/DiamondIcon';
+import ChevronRightIcon from '../components/icons/ChevronRightIcon';
+import BlockIcon from '../components/icons/BlockIcon';
+import SettingsIcon from '../components/icons/SettingsIcon';
+import CubeIcon from '../components/icons/CubeIcon';
+import TrophyIcon from '../components/icons/TrophyIcon';
+import UserGroupIcon from '../components/icons/UserGroupIcon';
+import LockClosedIcon from '../components/icons/LockClosedIcon';
+import EnvelopeIcon from '../components/icons/EnvelopeIcon';
+import QuestionMarkCircleIcon from '../components/icons/QuestionMarkCircleIcon';
+import { ProfileUser } from './BroadcasterProfileScreen';
+import FemaleIcon from '../components/icons/FemaleIcon';
 
 interface ProfileScreenProps {
-    setActiveScreen: (screen: string) => void;
+    setActiveScreen: (screen: string, userId?: string) => void;
+    currentUser: ProfileUser;
 }
 
 const StatItemButton: React.FC<{ value: string; label: string; onClick: () => void }> = ({ value, label, onClick }) => (
@@ -37,7 +40,7 @@ const MenuItem: React.FC<{ icon: React.ReactNode; label: string; onClick?: () =>
 );
 
 
-const ProfileScreen: React.FC<ProfileScreenProps> = ({ setActiveScreen }) => {
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ setActiveScreen, currentUser }) => {
     const menuItems = [
         { icon: <CubeIcon className="w-6 h-6 text-blue-400" />, label: "Mercado", screen: 'shop' },
         { icon: <TrophyIcon className="w-6 h-6 text-yellow-400" />, label: "Minha Patente", screen: 'level' },
@@ -50,45 +53,45 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ setActiveScreen }) => {
     ];
 
   return (
-    <div className="bg-[#181818] h-full text-white overflow-y-auto no-scrollbar pb-24">
+    <div className="bg-[#181818] h-full overflow-y-auto no-scrollbar text-white pb-24">
         <div className="pt-6 px-6 flex flex-col items-center text-center">
-            <button onClick={() => setActiveScreen('broadcasterProfile')} className="relative mb-4">
+            <button onClick={() => setActiveScreen('broadcasterProfile', currentUser.id)} className="relative mb-4">
                 <img 
-                    src="https://picsum.photos/seed/profile/100/100" 
+                    src={currentUser.avatarUrl} 
                     alt="User avatar" 
                     className="w-24 h-24 rounded-full border-4 border-purple-500"
                 />
                 <img 
-                    src="https://flagcdn.com/br.svg" 
+                    src={`https://flagcdn.com/${currentUser.country}.svg`} 
                     width="28" 
-                    alt="Brazil" 
+                    alt={currentUser.country}
                     className="absolute bottom-1 right-1 rounded-full border-2 border-black"
                 />
             </button>
-            <h2 className="text-2xl font-bold">Seu Perfil</h2>
+            <h2 className="text-2xl font-bold">{currentUser.name}</h2>
             <div className="flex items-center space-x-2 my-2">
-                <div className="flex items-center bg-blue-500 rounded-full px-2 py-0.5 text-xs font-semibold space-x-1">
-                    <MaleIcon className="w-3 h-3"/>
-                    <span>23</span>
+                <div className={`flex items-center ${currentUser.gender === 'male' ? 'bg-blue-500' : 'bg-pink-500'} rounded-full px-2 py-0.5 text-xs font-semibold space-x-1`}>
+                    {currentUser.gender === 'male' ? <MaleIcon className="w-3 h-3"/> : <FemaleIcon className="w-3 h-3" />}
+                    <span>{currentUser.age}</span>
                 </div>
                 <div className="flex items-center bg-cyan-500 rounded-full px-2 py-0.5 text-xs font-semibold space-x-1">
                     <LevelBadgeIcon className="w-3 h-3" />
-                    <span>6</span>
+                    <span>{currentUser.level}</span>
                 </div>
             </div>
             <div className="flex items-center text-gray-400 text-xs space-x-2">
-                <span>Identificação: 10755083</span>
+                <span>Identificação: {currentUser.id}</span>
                 <button className="hover:text-white transition-colors">
                     <CopyIcon className="w-4 h-4" />
                 </button>
             </div>
-            <p className="text-gray-400 text-xs mt-1">Brasil, São Paulo</p>
+            <p className="text-gray-400 text-xs mt-1">{currentUser.location}</p>
         </div>
 
         <div className="py-4 flex justify-around">
-            <StatItemButton value="0" label="Seguido" onClick={() => setActiveScreen('following')} />
-            <StatItemButton value="3" label="Fãs" onClick={() => setActiveScreen('fans')} />
-            <StatItemButton value="0" label="Visitantes" onClick={() => setActiveScreen('visitors')} />
+            <StatItemButton value={currentUser.following} label="Seguido" onClick={() => setActiveScreen('following', currentUser.id)} />
+            <StatItemButton value={currentUser.fans} label="Fãs" onClick={() => setActiveScreen('fans', currentUser.id)} />
+            <StatItemButton value="0" label="Visitantes" onClick={() => setActiveScreen('visitors', currentUser.id)} />
         </div>
 
         <div className="mt-2">
@@ -101,11 +104,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ setActiveScreen }) => {
                     <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-1 text-sm">
                             <DiamondIcon className="w-5 h-5" />
-                            <span className="text-white font-semibold">50.000</span>
+                            <span className="text-white font-semibold">{currentUser.wallet?.diamonds.toLocaleString('pt-BR') || '...'}</span>
                         </div>
                          <div className="flex items-center space-x-1 text-sm">
                             <CoinIcon className="w-5 h-5" />
-                            <span className="font-semibold text-white">125.000</span>
+                            <span className="font-semibold text-white">{currentUser.wallet?.earnings.toLocaleString('pt-BR') || '...'}</span>
                         </div>
                         <ChevronRightIcon className="w-5 h-5 text-gray-500" />
                     </div>

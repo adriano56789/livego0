@@ -1,20 +1,65 @@
-
-import React, { useState } from 'react';
-import ChevronLeftIcon from '../components/ChevronLeftIcon';
-import MoreHorizIcon from '../components/MoreHorizIcon';
-import FemaleIcon from '../components/FemaleIcon';
-import LevelBadgeIcon from '../components/LevelBadgeIcon';
+import React, { useState, useEffect, useRef } from 'react';
+import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
+import MoreHorizIcon from '../components/icons/MoreHorizIcon';
+import FemaleIcon from '../components/icons/FemaleIcon';
+import LevelBadgeIcon from '../components/icons/LevelBadgeIcon';
 import { ProfileUser } from './BroadcasterProfileScreen';
-import MaleIcon from '../components/MaleIcon';
+import MaleIcon from '../components/icons/MaleIcon';
+import { api } from '../services/apiService';
 
 interface ChatScreenProps {
     user: ProfileUser;
     onBack: () => void;
     onOpenProfile: (user: ProfileUser) => void;
+    currentUser: ProfileUser;
 }
 
-const ChatScreen: React.FC<ChatScreenProps> = ({ user, onBack, onOpenProfile }) => {
+interface Message {
+    id: string;
+    senderId: string;
+    text: string;
+    timestamp: number;
+}
+
+
+const ChatScreen: React.FC<ChatScreenProps> = ({ user, currentUser, onBack, onOpenProfile }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string|null>(null);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setLoading(true);
+        setError(null);
+        api.fetchChatHistory(currentUser.id, user.id)
+            .then(setMessages)
+            .catch(err => {
+                console.error("Failed to fetch chat history:", err);
+                setError(err.message);
+            })
+            .finally(() => setLoading(false));
+    }, [currentUser.id, user.id]);
+
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+    const handleSendMessage = async () => {
+        if (newMessage.trim() === '') return;
+        try {
+            const sentMessage = await api.sendMessage(currentUser.id, user.id, newMessage);
+            setMessages(prev => [...prev, sentMessage]);
+            setNewMessage('');
+        } catch (err: any) {
+            console.error("Failed to send message:", err);
+            // Optionally, show a toast or an error message near the input
+            alert(`Error sending message: ${err.message}`);
+        }
+    };
 
     const renderModal = () => (
         <div className="fixed inset-0 flex flex-col justify-end z-30" onClick={() => setIsModalOpen(false)}>
@@ -56,22 +101,31 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ user, onBack, onOpenProfile }) 
                     <MoreHorizIcon className="w-6 h-6" />
                 </button>
             </header>
-            <main className="flex-grow p-4 space-y-4 overflow-y-auto no-scrollbar">
-                <div className="flex">
-                    <div className="bg-[#2a2a2a] p-3 rounded-lg max-w-xs">
-                        <p>Olá! Tudo bem?</p>
-                        <p className="text-xs text-gray-500 text-right mt-1">21:42</p>
+            <main ref={chatContainerRef} className="flex-grow p-4 space-y-4 overflow-y-auto no-scrollbar">
+                 {loading && <p className="text-center text-gray-400">Carregando histórico...</p>}
+                 {error && <p className="text-center text-red-400">Erro ao carregar mensagens: {error}</p>}
+                 {!loading && !error && messages.map(msg => (
+                    <div key={msg.id} className={`flex ${msg.senderId === currentUser.id ? 'justify-end' : ''}`}>
+                        <div className={`${msg.senderId === currentUser.id ? 'bg-purple-600' : 'bg-[#2a2a2a]'} p-3 rounded-lg max-w-xs`}>
+                            <p>{msg.text}</p>
+                            <p className={`text-xs ${msg.senderId === currentUser.id ? 'text-purple-200' : 'text-gray-500'} text-right mt-1`}>
+                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                        </div>
                     </div>
-                </div>
+                ))}
             </main>
             <footer className="p-4 bg-black border-t border-gray-800">
                 <div className="flex items-center space-x-2">
                     <input 
                         type="text" 
                         placeholder="Sua mensagem..."
+                        value={newMessage}
+                        onChange={e => setNewMessage(e.target.value)}
+                        onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
                         className="flex-grow bg-[#2a2a2a] rounded-full px-4 py-3 text-white placeholder-gray-500 focus:outline-none"
                     />
-                    <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-full">
+                    <button onClick={handleSendMessage} className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-full">
                         Enviar
                     </button>
                 </div>

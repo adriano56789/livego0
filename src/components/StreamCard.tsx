@@ -1,13 +1,11 @@
-
 import React from 'react';
-import { Stream } from '../types';
-import LockIcon from './LockIcon';
+import { Stream } from '../types/types';
+import LockIcon from './icons/LockIcon';
 
 interface StreamCardProps {
   stream: Stream;
 }
 
-// Fix: Added `style` prop to Tag component to allow for custom styling, resolving type errors on lines 26 and 29.
 const Tag: React.FC<{ text: string; className?: string; style?: React.CSSProperties }> = ({ text, className, style }) => (
   <div className={`absolute top-2 left-2 px-2 py-0.5 text-xs font-bold rounded ${className}`} style={style}>
     {text}

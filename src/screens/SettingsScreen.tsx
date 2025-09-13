@@ -42,7 +42,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ setActiveScreen }) => {
     
     return (
         <div className="bg-black h-full text-white flex flex-col">
-            <header className="p-4 flex items-center border-b border-gray-800">
+            <header className="p-4 flex items-center border-b border-gray-800 flex-shrink-0">
                 <button onClick={() => setActiveScreen('profile')} className="absolute">
                     <ChevronLeftIcon className="w-6 h-6" />
                 </button>
@@ -55,7 +55,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ setActiveScreen }) => {
                     {settingsItems.map(item => <SettingsItem key={item.label} icon={item.icon} label={item.label} isDestructive={item.isDestructive} onClick={item.screen ? () => setActiveScreen(item.screen) : undefined} />)}
                 </ul>
             </main>
-             <footer className="p-6">
+             <footer className="p-6 flex-shrink-0">
                 <button className="w-full bg-[#be123c] hover:bg-[#9f1239] text-white font-bold py-3 rounded-full transition-colors text-lg">
                     Sair
                 </button>

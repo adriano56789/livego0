@@ -12,7 +12,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ setActiveScreen }) => {
 
     return (
         <div className="bg-black h-full text-white flex flex-col">
-            <header className="p-4 flex items-center border-b border-gray-800">
+            <header className="p-4 flex items-center border-b border-gray-800 flex-shrink-0">
                 <button onClick={() => setActiveScreen('profile')} className="absolute">
                     <ChevronLeftIcon className="w-6 h-6" />
                 </button>
@@ -21,7 +21,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ setActiveScreen }) => {
                 </h1>
             </header>
 
-            <nav className="flex">
+            <nav className="flex flex-shrink-0">
                 <button
                     onClick={() => setActiveTab('report')}
                     className={`flex-1 p-4 font-semibold text-center border-b-2 ${activeTab === 'report' ? 'text-white border-green-500' : 'text-gray-500 border-transparent'}`}
@@ -52,7 +52,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ setActiveScreen }) => {
                 )}
             </main>
 
-            <footer className="p-6">
+            <footer className="p-6 flex-shrink-0">
                 <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-full transition-colors text-lg">
                     Enviar
                 </button>

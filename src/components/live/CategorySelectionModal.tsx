@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { CATEGORIES } from '../../constants';
-import CloseIcon from '../CloseIcon';
+import { CATEGORIES } from '../../data/constants';
+import CloseIcon from '../icons/CloseIcon';
 
 interface CategorySelectionModalProps {
     onClose: () => void;

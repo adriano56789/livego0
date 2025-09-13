@@ -1,15 +1,16 @@
-
-import React, { useState } from 'react';
-import ChevronLeftIcon from '../components/ChevronLeftIcon';
-import MenuIcon from '../components/MenuIcon';
-import DiamondIcon from '../components/DiamondIcon';
-import CoinIcon from '../components/CoinIcon';
-import ChevronRightIcon from '../components/ChevronRightIcon';
-import QuestionMarkCircleIcon from '../components/QuestionMarkCircleIcon';
+import React, { useState, useEffect } from 'react';
+import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
+import MenuIcon from '../components/icons/MenuIcon';
+import DiamondIcon from '../components/icons/DiamondIcon';
+import CoinIcon from '../components/icons/CoinIcon';
+import ChevronRightIcon from '../components/icons/ChevronRightIcon';
+import QuestionMarkCircleIcon from '../components/icons/QuestionMarkCircleIcon';
+import { api } from '../services/apiService';
 
 interface WalletScreenProps {
     setActiveScreen: (screen: string) => void;
     onPurchaseClick: (pkg: { amount: number; price: number }) => void;
+    currentUserId: string;
 }
 
 const diamondPackages = [
@@ -33,8 +34,18 @@ const PurchaseCard: React.FC<{ amount: number; price: number; onClick: () => voi
     </button>
 );
 
-const WalletScreen: React.FC<WalletScreenProps> = ({ setActiveScreen, onPurchaseClick }) => {
+const WalletScreen: React.FC<WalletScreenProps> = ({ setActiveScreen, onPurchaseClick, currentUserId }) => {
     const [activeTab, setActiveTab] = useState('diamante');
+    const [wallet, setWallet] = useState<{ diamonds: number; earnings: number } | null>(null);
+    const [error, setError] = useState<string|null>(null);
+
+    useEffect(() => {
+        api.fetchWallet(currentUserId).then(setWallet).catch(err => {
+            console.error(err);
+            setError(err.message);
+        });
+    }, [currentUserId]);
+
 
     const renderDiamanteTab = () => (
         <div className="grid grid-cols-2 gap-3 mt-4">
@@ -58,7 +69,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ setActiveScreen, onPurchase
                         MÁXIMO
                     </button>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Disponível para saque: 125.000 ganhos</p>
+                <p className="text-xs text-gray-400 mt-2">Disponível para saque: {wallet ? wallet.earnings.toLocaleString('pt-BR') : '...'} ganhos</p>
             </div>
             
             <div className="space-y-2 text-sm">
@@ -118,28 +129,32 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ setActiveScreen, onPurchase
             </header>
 
             <main className="p-4">
-                <div className="bg-[#1e1e1e] rounded-lg p-4 flex justify-around">
-                    <div className="text-center">
-                        <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                            <span>Diamantes</span>
-                            <ChevronRightIcon className="w-4 h-4" />
+                <div className="bg-[#1e1e1e] rounded-lg p-4">
+                {error ? <p className="text-red-400 text-center">Erro ao carregar carteira: {error}</p> :
+                    <div className="flex justify-around">
+                        <div className="text-center">
+                            <div className="flex items-center space-x-2 text-gray-400 text-sm">
+                                <span>Diamantes</span>
+                                <ChevronRightIcon className="w-4 h-4" />
+                            </div>
+                            <div className="flex items-center space-x-2 mt-1">
+                                <DiamondIcon className="w-6 h-6" />
+                                <span className="text-2xl font-bold">{wallet ? wallet.diamonds.toLocaleString('pt-BR') : '...'}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center space-x-2 mt-1">
-                            <DiamondIcon className="w-6 h-6" />
-                            <span className="text-2xl font-bold">50.000</span>
+                         <div className="text-center">
+                            <div className="flex items-center space-x-2 text-gray-400 text-sm">
+                                <span>Ganhos</span>
+                                <QuestionMarkCircleIcon className="w-4 h-4" />
+                                <ChevronRightIcon className="w-4 h-4" />
+                            </div>
+                            <div className="flex items-center space-x-2 mt-1">
+                                <CoinIcon className="w-6 h-6" />
+                                <span className="text-2xl font-bold">{wallet ? wallet.earnings.toLocaleString('pt-BR') : '...'}</span>
+                            </div>
                         </div>
                     </div>
-                     <div className="text-center">
-                        <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                            <span>Ganhos</span>
-                            <QuestionMarkCircleIcon className="w-4 h-4" />
-                            <ChevronRightIcon className="w-4 h-4" />
-                        </div>
-                        <div className="flex items-center space-x-2 mt-1">
-                            <CoinIcon className="w-6 h-6" />
-                            <span className="text-2xl font-bold">125.000</span>
-                        </div>
-                    </div>
+                }
                 </div>
 
                 {activeTab === 'diamante' ? renderDiamanteTab() : renderGanhosTab()}

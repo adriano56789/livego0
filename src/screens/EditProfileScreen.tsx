@@ -1,10 +1,10 @@
-
 import React from 'react';
 import ChevronLeftIcon from '../components/ChevronLeftIcon';
 import ChevronRightIcon from '../components/ChevronRightIcon';
 
 interface EditProfileScreenProps {
     setActiveScreen: (screen: string) => void;
+    currentUserId: string;
 }
 
 const InfoRow: React.FC<{ label: string; value: string; onClick?: () => void }> = ({ label, value, onClick }) => (

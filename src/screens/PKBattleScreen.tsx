@@ -1,20 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import UserGroupIcon from '../components/icons/UserGroupIcon';
-import CoinFilledIcon from '../components/icons/CoinFilledIcon';
-import SendIcon from '../components/icons/SendIcon';
-import MaleIcon from '../components/icons/MaleIcon';
-import FemaleIcon from '../components/icons/FemaleIcon';
-import LevelBadgeIcon from '../components/icons/LevelBadgeIcon';
-import PlusIcon from '../components/icons/PlusIcon';
-import GiftIcon from '../components/icons/GiftIcon';
 import LiveHeader from '../components/live/LiveHeader';
 import OnlineUsersModal from '../components/live/OnlineUsersModal';
 import EndStreamConfirmationModal from '../components/live/EndStreamConfirmationModal';
 import ChatMessage from '../components/live/ChatMessage';
 import StarIcon from '../components/icons/StarIcon';
-import LightningBoltIcon from '../components/icons/LightningBoltIcon';
-import CoHostIcon from '../components/icons/CoHostIcon';
-import LevelIcon from '../components/icons/LevelIcon';
 import CoHostInvitationScreen from '../components/live/CoHostInvitationScreen';
 import MessageIcon from '../components/icons/MessageIcon';
 import EntryChatMessage from '../components/live/EntryChatMessage';
@@ -25,6 +15,8 @@ import MoreIcon from '../components/icons/MoreIcon';
 import ToolsModal from '../components/live/ToolsModal';
 import ResolutionPanel from '../components/live/ResolutionPanel';
 import BeautyEffectsPanel from '../components/live/BeautyEffectsPanel';
+import SendIcon from '../components/icons/SendIcon';
+import GiftIcon from '../components/icons/GiftIcon';
 
 interface PKBattleScreenProps {
     onClose: () => void;
@@ -32,6 +24,7 @@ interface PKBattleScreenProps {
     onGiftModalOpen: () => void;
     onRankingModalOpen: () => void;
     onPrivateChatOpen: () => void;
+    currentUser: ProfileUser;
 }
 
 const mockMessages = [
@@ -40,11 +33,6 @@ const mockMessages = [
     { id: 101, type: 'entry', user: 'GamerPro', avatar: 'https://i.pravatar.cc/150?img=21' },
     { id: 100, type: 'special_entry', message: '💎 Super Fã entrou na sala' },
     { id: 3, type: 'chat', user: 'Novo_Fan', age: 18, gender: 'male', level: 1, message: 'Primeira vez aqui!', avatar: 'https://i.pravatar.cc/150?img=17' },
-    { id: 4, type: 'chat', user: 'Super Fã', age: 28, gender: 'female', level: 25, message: 'Mandando um presente!', avatar: 'https://i.pravatar.cc/150?img=18' },
-    { id: 102, type: 'entry', user: 'Curioso', avatar: 'https://i.pravatar.cc/150?img=22' },
-    { id: 5, type: 'chat', user: 'Anônimo', age: 21, gender: 'male', level: 2, message: 'Que batalha emocionante!', avatar: 'https://i.pravatar.cc/150?img=19' },
-    { id: 6, type: 'chat', user: 'Espectador1', age: 25, gender: 'male', level: 5, message: 'Virou!', avatar: 'https://i.pravatar.cc/150?img=15' },
-    { id: 7, type: 'chat', user: 'Apoiador Forte', age: 32, gender: 'female', level: 12, message: 'É isso aí!', avatar: 'https://i.pravatar.cc/150?img=16' },
 ];
 
 const topGifters = [
@@ -82,8 +70,9 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
     onGiftModalOpen,
     onRankingModalOpen,
     onPrivateChatOpen,
+    currentUser,
  }) => {
-    const [timeLeft, setTimeLeft] = useState(237); // 3 minutes 57 seconds
+    const [timeLeft, setTimeLeft] = useState(237);
     const [isOnlineUsersOpen, setOnlineUsersOpen] = useState(false);
     const [isEndConfirmationOpen, setEndConfirmationOpen] = useState(false);
     const [isCoHostModalOpen, setCoHostModalOpen] = useState(false);
@@ -115,14 +104,12 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
         }
     }, [timeLeft]);
     
-    // Simulate live chat and entries
     useEffect(() => {
         let messageIndex = 0;
         const interval = setInterval(() => {
             if (messageIndex < mockMessages.length) {
                 const newMessage = mockMessages[messageIndex];
                 if (newMessage.type === 'special_entry') {
-                    // Fix: Type error due to complex inferred type. Explicitly creating an object with the expected shape.
                     setEntryEffect({ id: newMessage.id, message: newMessage.message });
                 } else {
                     setMessages(prev => [...prev, newMessage]);
@@ -195,7 +182,7 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
 
 
     return (
-        <div className="absolute inset-0 bg-[#2d2d3a] flex flex-col font-sans text-white overflow-x-hidden">
+        <div className="absolute inset-0 bg-[#2d2d3a] flex flex-col font-sans text-white">
             <LiveHeader
                 onClose={() => setEndConfirmationOpen(true)}
                 onProfileClick={onProfileModalOpen}
@@ -203,10 +190,8 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
             />
             
             <main className="flex-grow flex flex-col overflow-hidden">
-                {/* SCORE BAR AND TIMER ON TOP */}
                 <div className="relative z-10 p-2">
                     <div className="relative w-full h-8 flex text-white font-bold text-base rounded-md shadow-md">
-                        {/* Pink Section */}
                         <div 
                             className="relative bg-[#EC4899] flex items-center pl-3 overflow-hidden rounded-l-md" 
                             style={{ width: `${myProgress}%` }}
@@ -215,18 +200,15 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
                                 <StarIcon className="w-4 h-4 text-white" fill="white" />
                                 <span>{myScore}</span>
                             </div>
-                            {/* Sparkles */}
                             <div className="absolute w-0.5 h-0.5 bg-white/80 rounded-full top-2.5 left-1/3 animate-pulse" style={{ animationDelay: '0.1s' }}></div>
                             <div className="absolute w-1 h-1 bg-white/90 rounded-full bottom-1.5 left-[45%] animate-pulse" style={{ animationDelay: '0.6s' }}></div>
                             <div className="absolute w-0.5 h-0.5 bg-white/70 rounded-full top-2 left-2/3 animate-pulse" style={{ animationDelay: '1.1s' }}></div>
                         </div>
 
-                        {/* Blue Section */}
                         <div className="relative bg-[#3B82F6] flex-1 flex items-center justify-end pr-3 rounded-r-md">
                             <span>{opponentScore}</span>
                         </div>
 
-                        {/* Separator */}
                         <div 
                             className="absolute top-full -translate-y-1/2 z-20" 
                             style={{ left: `${myProgress}%`, transform: 'translateX(-50%) translateY(-2px)' }}
@@ -241,13 +223,10 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
                     </div>
                 </div>
 
-                {/* Container for videos and all overlays */}
                 <div className="relative flex-1">
-                    {/* Video Panels in the background */}
                     <div className="absolute inset-0 grid grid-cols-2">
                         <div className="relative flex items-center justify-center border-r border-white/20 bg-gray-900">
                            <img src="https://picsum.photos/seed/pk-left/400/600" alt="Streamer 1" className="w-full h-full object-cover" />
-                           {/* My Top Gifters */}
                             <button onClick={onRankingModalOpen} className="absolute bottom-4 right-2 flex items-center space-x-1">
                                 {topGifters.map(gifter => (
                                     <img key={gifter.id} src={gifter.avatar} alt="top gifter" className="w-8 h-8 rounded-full border-2 border-yellow-400" />
@@ -258,7 +237,6 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
                            <button className="absolute inset-0 w-full h-full" onClick={() => setProfileToView(opponentUser)} aria-label="Ver perfil do oponente">
                                 <img src="https://picsum.photos/seed/pk-right/400/600" alt="Streamer 2" className="w-full h-full object-cover" />
                             </button>
-                             {/* Opponent Top Gifters */}
                             <button onClick={onRankingModalOpen} className="absolute bottom-4 right-2 flex items-center space-x-1">
                                 {opponentTopGifters.map(gifter => (
                                      <img key={gifter.id} src={gifter.avatar} alt="top gifter" className="w-8 h-8 rounded-full border-2 border-gray-400" />
@@ -272,7 +250,6 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
                     </div>
                 </div>
 
-                {/* Chat and Footer */}
                 <div className="h-[35vh] flex flex-col p-3 relative">
                      {entryEffect && (
                         <div
@@ -283,7 +260,7 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
                             <p>{entryEffect.message}</p>
                         </div>
                     )}
-                    <div ref={chatContainerRef} className="flex-grow flex flex-col justify-end overflow-y-auto space-y-2">
+                    <div ref={chatContainerRef} className="flex-grow flex flex-col justify-end overflow-y-auto no-scrollbar space-y-2">
                         {messages.map((msg: any) => {
                             if (msg.type === 'entry') {
                                 return <EntryChatMessage key={msg.id} user={msg.user} avatar={msg.avatar} />;
@@ -318,7 +295,8 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
             {isOnlineUsersOpen && <OnlineUsersModal onClose={() => setOnlineUsersOpen(false)} />}
             {isEndConfirmationOpen && <EndStreamConfirmationModal onCancel={() => setEndConfirmationOpen(false)} onConfirm={onClose} />}
             {isCoHostModalOpen && <CoHostInvitationScreen onClose={() => setCoHostModalOpen(false)} onInvite={handleInvite} />}
-            {profileToView && <BroadcasterProfileModal user={profileToView} onClose={() => setProfileToView(null)} onStartChat={handleStartChat} />}
+            {/* FIX: Pass required prop `isSelf` to BroadcasterProfileModal */}
+            {profileToView && <BroadcasterProfileModal user={profileToView} isSelf={profileToView.id === currentUser.id} onClose={() => setProfileToView(null)} onStartChat={handleStartChat} />}
             {isToolsOpen && (
                 <ToolsModal 
                     onClose={() => setIsToolsOpen(false)} 
@@ -339,6 +317,7 @@ const PKBattleScreen: React.FC<PKBattleScreenProps> = ({
                 <div className="absolute inset-0 z-40 bg-black">
                     <ChatScreen
                         user={chatWithUser}
+                        currentUser={currentUser}
                         onBack={() => setChatWithUser(null)}
                         onOpenProfile={() => {
                             setChatWithUser(null);

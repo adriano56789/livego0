@@ -31,12 +31,12 @@ const StatusIcon = () => (
 );
 
 
-const ReminderScreen: React.FC<ReminderScreenProps> = ({ onClose }) => {
+export const ReminderScreen: React.FC<ReminderScreenProps> = ({ onClose }) => {
     const [isClosing, setIsClosing] = useState(false);
 
     const handleClose = () => {
         setIsClosing(true);
-        setTimeout(onClose, 300); // Corresponds to animation duration
+        setTimeout(onClose, 300);
     };
 
     return (
@@ -105,5 +105,3 @@ const ReminderScreen: React.FC<ReminderScreenProps> = ({ onClose }) => {
         </div>
     );
 };
-
-export default ReminderScreen;

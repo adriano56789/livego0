@@ -1,7 +1,6 @@
-
 import React from 'react';
-import GoogleIcon from '../components/GoogleIcon';
-import FacebookIcon from '../components/FacebookIcon';
+import GoogleIcon from '../components/icons/GoogleIcon';
+import FacebookIcon from '../components/icons/FacebookIcon';
 
 interface LoginScreenProps {
   onLogin: () => void;

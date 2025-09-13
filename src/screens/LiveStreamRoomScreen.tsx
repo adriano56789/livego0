@@ -1,9 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import OnlineUsersModal from '../components/live/OnlineUsersModal';
 import ToolsModal from '../components/live/ToolsModal';
 import EndStreamConfirmationModal from '../components/live/EndStreamConfirmationModal';
-import SoundWaveIcon from '../components/icons/SoundWaveIcon';
-import MoreIcon from '../components/icons/MoreIcon';
 import HeartFilledIcon from '../components/icons/HeartFilledIcon';
 import CoinFilledIcon from '../components/icons/CoinFilledIcon';
 import BroadcasterProfileModal from '../components/live/BroadcasterProfileModal';
@@ -15,22 +14,20 @@ import GiftModal from '../components/live/GiftModal';
 import CoHostInvitationScreen from '../components/live/CoHostInvitationScreen';
 import BeautyEffectsPanel from '../components/live/BeautyEffectsPanel';
 import PKBattleScreen from './PKBattleScreen';
-import MaleIcon from '../components/icons/MaleIcon';
-import FemaleIcon from '../components/icons/FemaleIcon';
-import LevelBadgeIcon from '../components/icons/LevelBadgeIcon';
 import PrivateChatModal from '../components/live/PrivateChatModal';
-import PlusIcon from '../components/icons/PlusIcon';
 import LiveHeader from '../components/live/LiveHeader';
 import ChatMessage from '../components/live/ChatMessage';
 import EntryChatMessage from '../components/live/EntryChatMessage';
 import { ProfileUser } from './BroadcasterProfileScreen';
 import PurchaseConfirmationScreen from './PurchaseConfirmationScreen';
 import ResolutionPanel from '../components/live/ResolutionPanel';
+import MoreIcon from '../components/icons/MoreIcon';
 
 
 interface LiveStreamRoomScreenProps {
     onEndLive: (duration: string) => void;
     isPrivate: boolean;
+    currentUser: ProfileUser;
 }
 
 const mockMessages = [
@@ -46,7 +43,7 @@ const mockMessages = [
     { id: 7, type: 'chat', user: 'Apoiador Forte', age: 32, gender: 'female', level: 12, message: 'É isso aí!', avatar: 'https://i.pravatar.cc/150?img=16' },
 ];
 
-const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, isPrivate }) => {
+const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, isPrivate, currentUser }) => {
     const [isOnlineUsersOpen, setOnlineUsersOpen] = useState(false);
     const [isToolsOpen, setToolsOpen] = useState(false);
     const [isEndConfirmationOpen, setEndConfirmationOpen] = useState(false);
@@ -96,13 +93,11 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, 
         startCamera();
         startTimeRef.current = new Date();
         
-        // Simulate live chat and entries
         let messageIndex = 0;
         const interval = setInterval(() => {
             if (messageIndex < mockMessages.length) {
                 const newMessage = mockMessages[messageIndex];
                 if (newMessage.type === 'special_entry') {
-                    // Fix: Type error due to complex inferred type. Explicitly creating an object with the expected shape.
                     setEntryEffect({ id: newMessage.id, message: newMessage.message });
                 } else {
                     setMessages(prev => [...prev, newMessage]);
@@ -154,7 +149,6 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, 
     const handleSelectResolution = (resolution: string) => {
         setCurrentResolution(resolution);
         setResolutionPanelOpen(false);
-        // Logic to change video quality would go here
     };
 
     const handleInviteToPK = () => {
@@ -192,7 +186,7 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, 
     
     const handleInitiatePurchase = (pkg: { amount: number; price: number }) => {
         setSelectedPurchasePackage(pkg);
-        setIsGiftModalOpen(false); // Close gift modal for better UX
+        setIsGiftModalOpen(false);
     };
 
     return (
@@ -218,9 +212,10 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, 
                             onGiftModalOpen={() => setIsGiftModalOpen(true)}
                             onPrivateChatOpen={() => setPrivateChatOpen(true)}
                             onRankingModalOpen={() => setRankingModalOpen(true)}
+                            currentUser={currentUser}
                         />
                     ) : (
-                        <div className="absolute inset-0 bg-black/10 flex flex-col justify-between overflow-x-hidden">
+                        <div className="absolute inset-0 bg-black/10 flex flex-col justify-between">
                             <LiveHeader
                                 onClose={() => setEndConfirmationOpen(true)}
                                 onProfileClick={() => setProfileModalOpen(true)}
@@ -250,7 +245,7 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, 
                                     </div>
                                 )}
                                 
-                                <div ref={chatContainerRef} className="h-[35vh] flex flex-col justify-end p-3 overflow-y-auto space-y-2">
+                                <div ref={chatContainerRef} className="h-[35vh] flex flex-col justify-end p-3 overflow-y-auto no-scrollbar space-y-2">
                                 {messages.map((msg: any) => {
                                         if (msg.type === 'entry') {
                                             return <EntryChatMessage key={msg.id} user={msg.user} avatar={msg.avatar} />;
@@ -273,7 +268,6 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, 
                                 </div>
                             </main>
 
-                            {/* Footer */}
                             <footer className="p-3">
                                 <div className="bg-black/40 rounded-full flex items-center p-1.5 space-x-2">
                                     <div className="flex-grow flex items-center">
@@ -296,15 +290,18 @@ const LiveStreamRoomScreen: React.FC<LiveStreamRoomScreenProps> = ({ onEndLive, 
             {isOnlineUsersOpen && <OnlineUsersModal onClose={() => setOnlineUsersOpen(false)} />}
             {isToolsOpen && <ToolsModal onClose={() => setToolsOpen(false)} onOpenCoHost={handleOpenCoHostModal} onOpenBeautyPanel={handleOpenBeautyPanel} onOpenClarityPanel={handleOpenClarityPanel} />}
             {isEndConfirmationOpen && <EndStreamConfirmationModal onCancel={() => setEndConfirmationOpen(false)} onConfirm={handleEndStream} />}
-            {isProfileModalOpen && <BroadcasterProfileModal onClose={() => setProfileModalOpen(false)} />}
+            {/* FIX: Pass required props `user` and `isSelf` to BroadcasterProfileModal */}
+            {isProfileModalOpen && <BroadcasterProfileModal user={currentUser} isSelf={true} onClose={() => setProfileModalOpen(false)} />}
             {isRankingModalOpen && <RankingModal onClose={() => setRankingModalOpen(false)} />}
             {isGiftModalOpen && <GiftModal onClose={() => setIsGiftModalOpen(false)} onInitiatePurchase={handleInitiatePurchase} />}
             {isCoHostModalOpen && <CoHostInvitationScreen onClose={() => setCoHostModalOpen(false)} onInvite={handleInviteToPK} />}
             {isBeautyPanelOpen && <BeautyEffectsPanel onClose={() => setBeautyPanelOpen(false)} />}
             {isPrivateChatOpen && <PrivateChatModal onClose={() => setPrivateChatOpen(false)} streamerName={privateChatUser ? privateChatUser.name : "Rainha PK"} streamerAvatar={privateChatUser ? privateChatUser.avatar : "https://picsum.photos/seed/profile/40/40"} />}
+            {/* FIX: Pass required prop `isSelf` to BroadcasterProfileModal */}
             {viewedUser && (
                 <BroadcasterProfileModal
                     user={viewedUser}
+                    isSelf={viewedUser.id === currentUser.id}
                     onClose={() => setViewedUser(null)}
                     onStartChat={handleStartChat}
                 />

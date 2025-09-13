@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
-import MaleIcon from '../components/MaleIcon';
-import LevelBadgeIcon from '../components/LevelBadgeIcon';
-import CopyIcon from '../components/CopyIcon';
-import ChevronRightIcon from '../components/ChevronRightIcon';
-import EditIcon from '../components/EditIcon';
-import PlayOutlineIcon from '../components/PlayOutlineIcon';
-import HeartIcon from '../components/HeartIcon';
-import DocumentDetailsIcon from '../components/DocumentDetailsIcon';
-import MoreHorizIcon from '../components/MoreHorizIcon';
-import SoundWaveIcon from '../components/SoundWaveIcon';
-import StarIcon from '../components/StarIcon';
-import FemaleIcon from '../components/FemaleIcon';
+import MaleIcon from '../components/icons/MaleIcon';
+import LevelBadgeIcon from '../components/icons/LevelBadgeIcon';
+import CopyIcon from '../components/icons/CopyIcon';
+import ChevronRightIcon from '../components/icons/ChevronRightIcon';
+import EditIcon from '../components/icons/EditIcon';
+import PlayOutlineIcon from '../components/icons/PlayOutlineIcon';
+import HeartIcon from '../components/icons/HeartIcon';
+import DocumentDetailsIcon from '../components/icons/DocumentDetailsIcon';
+import MoreHorizIcon from '../components/icons/MoreHorizIcon';
+import SoundWaveIcon from '../components/icons/SoundWaveIcon';
+import StarIcon from '../components/icons/StarIcon';
+import FemaleIcon from '../components/icons/FemaleIcon';
 
 export interface ProfileUser {
     name: string;
@@ -30,6 +30,10 @@ export interface ProfileUser {
     enviados: string;
     topFansAvatars: string[];
     isLive?: boolean;
+    wallet?: {
+        diamonds: number;
+        earnings: number;
+    }
 }
 
 export const selfUser: ProfileUser = {
@@ -44,7 +48,7 @@ export const selfUser: ProfileUser = {
     location: 'Brasil, São Paulo',
     distance: '0,00 km',
     fans: '3',
-    following: '0',
+    following: '3',
     receptores: '125,00 mil',
     enviados: '0',
     topFansAvatars: ['https://i.pravatar.cc/150?img=1', 'https://i.pravatar.cc/150?img=2'],
@@ -52,7 +56,7 @@ export const selfUser: ProfileUser = {
 };
 
 interface BroadcasterProfileScreenProps {
-    setActiveScreen: (screen: string) => void;
+    setActiveScreen: (screen: string, userId?: string) => void;
     isModal?: boolean;
     onModalClose?: () => void;
     user: ProfileUser;
@@ -99,7 +103,7 @@ const BroadcasterProfileScreen: React.FC<BroadcasterProfileScreenProps> = ({ set
     );
 
     return (
-        <div className={`bg-black h-full text-white overflow-y-auto no-scrollbar ${isModal && !isSelf ? 'pb-40' : 'pb-24'}`}>
+        <div className={`bg-black h-full overflow-y-auto no-scrollbar text-white ${isModal && !isSelf ? 'pb-40' : 'pb-24'}`}>
             <div className="relative h-60">
                 <img src={user.coverUrl} alt="Cover" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black bg-opacity-40"></div>
@@ -154,14 +158,14 @@ const BroadcasterProfileScreen: React.FC<BroadcasterProfileScreenProps> = ({ set
             </div>
             
             <div className="px-6 py-4 flex justify-between">
-                <StatButton value={user.fans} label="Fãs" onClick={() => setActiveScreen('broadcasterTopFans')} />
-                <StatButton value={user.following} label="Seguido" onClick={() => setActiveScreen('following')} />
+                <StatButton value={user.fans} label="Fãs" onClick={() => setActiveScreen('broadcasterTopFans', user.id)} />
+                <StatButton value={user.following} label="Seguido" onClick={() => setActiveScreen('following', user.id)} />
                 <StatButton value={user.receptores} label="Receptores" onClick={() => {}} />
                 <StatButton value={user.enviados} label="Enviados" onClick={() => {}} />
             </div>
 
             <div className="px-4">
-                <button onClick={() => setActiveScreen('broadcasterTopFans')} className="flex justify-between items-center py-3 px-4 bg-[#1f1f1f] rounded-lg w-full">
+                <button onClick={() => setActiveScreen('broadcasterTopFans', user.id)} className="flex justify-between items-center py-3 px-4 bg-[#1f1f1f] rounded-lg w-full">
                     <span className="font-semibold">Principais fãs</span>
                     <div className="flex items-center">
                         <div className="flex -space-x-4">

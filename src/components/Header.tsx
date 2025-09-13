@@ -1,14 +1,15 @@
-
 import React, { useState } from 'react';
-import { CATEGORIES } from '../constants';
-import SearchIcon from './SearchIcon';
+import { CATEGORIES } from '../data/constants';
+import SearchIcon from './icons/SearchIcon';
+import RefreshIcon from './icons/RefreshIcon';
 
 interface HeaderProps {
   setActiveScreen: (screen: string) => void;
   onOpenReminderPanel: () => void;
+  onRefreshStreams: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ setActiveScreen, onOpenReminderPanel }) => {
+const Header: React.FC<HeaderProps> = ({ setActiveScreen, onOpenReminderPanel, onRefreshStreams }) => {
   const [activeCategory, setActiveCategory] = useState('PK');
 
   return (
@@ -23,12 +24,15 @@ const Header: React.FC<HeaderProps> = ({ setActiveScreen, onOpenReminderPanel })
           >
             T
           </button>
+           <button onClick={onRefreshStreams} aria-label="Refresh Streams">
+            <RefreshIcon className="w-7 h-7 text-white" />
+          </button>
           <button onClick={() => setActiveScreen('searchFriends')} aria-label="Search">
             <SearchIcon className="w-7 h-7 text-white" />
           </button>
         </div>
       </div>
-      <nav className="overflow-x-auto whitespace-nowrap pb-2 no-scrollbar">
+      <nav className="overflow-x-auto whitespace-nowrap pb-2 -mb-2 no-scrollbar">
         <ul className="flex items-center space-x-5 text-gray-400">
           {CATEGORIES.map((category) => (
             <li key={category}>

@@ -34,7 +34,7 @@ const WithdrawMethodScreen: React.FC<WithdrawMethodScreenProps> = ({ setActiveSc
 
     return (
         <div className="bg-[#121212] h-full text-white flex flex-col">
-            <header className="p-4 flex items-center border-b border-gray-800">
+            <header className="p-4 flex items-center border-b border-gray-800 flex-shrink-0">
                 <button onClick={() => setActiveScreen('wallet')} className="absolute" aria-label="Go back to wallet">
                     <ChevronLeftIcon className="w-6 h-6" />
                 </button>
@@ -75,7 +75,7 @@ const WithdrawMethodScreen: React.FC<WithdrawMethodScreenProps> = ({ setActiveSc
                 )}
             </main>
 
-            <footer className="p-6">
+            <footer className="p-6 flex-shrink-0">
                 <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-full transition-colors text-lg">
                     Salvar
                 </button>

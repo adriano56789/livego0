@@ -1,23 +1,19 @@
-
-import React from 'react';
-import ChevronLeftIcon from '../components/ChevronLeftIcon';
+import React, { useState, useEffect } from 'react';
+import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
+import { api } from '../services/apiService';
+import { ProfileUser } from './BroadcasterProfileScreen';
 
 interface FollowingScreenProps {
-    setActiveScreen: (screen: string) => void;
+    setActiveScreen: (screen: string, userId?: string) => void;
+    userId: string;
 }
 
-const followingUsers = [
-  { name: 'Rainha PK', id: '66345102', avatar: 'https://i.pravatar.cc/150?img=1' },
-  { name: 'DJ Code', id: '12345678', avatar: 'https://picsum.photos/seed/4/400/600' },
-  { name: 'Aventureira', id: '87654321', avatar: 'https://picsum.photos/seed/5/400/600' },
-];
-
-const UserListItem: React.FC<{ name: string; id: string; avatar: string; setActiveScreen: (screen: string) => void; }> = ({ name, id, avatar, setActiveScreen }) => (
-    <li onClick={() => setActiveScreen('broadcasterProfile')} className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-[#1f1f1f]">
-        <img src={avatar} alt={name} className="w-12 h-12 rounded-full" />
+const UserListItem: React.FC<{ user: ProfileUser; setActiveScreen: (screen: string, userId?: string) => void; }> = ({ user, setActiveScreen }) => (
+    <li onClick={() => setActiveScreen('broadcasterProfile', user.id)} className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-[#1f1f1f]">
+        <img src={user.avatarUrl} alt={user.name} className="w-12 h-12 rounded-full" />
         <div className="flex-grow">
-            <p className="font-semibold text-white">{name}</p>
-            <p className="text-sm text-gray-400">Identificação: {id}</p>
+            <p className="font-semibold text-white">{user.name}</p>
+            <p className="text-sm text-gray-400">Identificação: {user.id}</p>
         </div>
         <div className="bg-[#3a3a3a] text-gray-300 font-semibold py-2 px-6 rounded-full text-sm">
             Seguido
@@ -25,11 +21,40 @@ const UserListItem: React.FC<{ name: string; id: string; avatar: string; setActi
     </li>
 );
 
-const FollowingScreen: React.FC<FollowingScreenProps> = ({ setActiveScreen }) => {
+const FollowingScreen: React.FC<FollowingScreenProps> = ({ setActiveScreen, userId }) => {
+    const [following, setFollowing] = useState<ProfileUser[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setLoading(true);
+        setError(null);
+        api.fetchFollowing(userId).then(data => {
+            setFollowing(data);
+        }).catch(err => {
+            console.error("Failed to fetch following:", err);
+            setError(err.message);
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, [userId]);
+
+    const renderContent = () => {
+        if (loading) return <p className="text-center text-gray-500 p-8">Carregando...</p>;
+        if (error) return <p className="text-center text-red-400 p-8">Erro ao carregar lista: {error}</p>;
+        if (following.length === 0) return <div className="text-center pt-20 text-gray-500"><p>Ainda não segue ninguém.</p></div>;
+        
+        return (
+            <ul>
+                {following.map(user => <UserListItem key={user.id} user={user} setActiveScreen={setActiveScreen} />)}
+            </ul>
+        );
+    }
+
     return (
         <div className="bg-[#121212] min-h-screen text-white">
             <header className="p-4 flex items-center border-b border-gray-800">
-                <button onClick={() => setActiveScreen('profile')} className="absolute">
+                <button onClick={() => setActiveScreen('broadcasterProfile')} className="absolute">
                     <ChevronLeftIcon className="w-6 h-6" />
                 </button>
                 <h1 className="flex-1 text-center text-lg font-semibold">
@@ -37,15 +62,7 @@ const FollowingScreen: React.FC<FollowingScreenProps> = ({ setActiveScreen }) =>
                 </h1>
             </header>
             <main>
-                {followingUsers.length > 0 ? (
-                    <ul>
-                        {followingUsers.map(user => <UserListItem key={user.id} {...user} setActiveScreen={setActiveScreen} />)}
-                    </ul>
-                ) : (
-                    <div className="text-center pt-20 text-gray-500">
-                        <p>Ainda não segue ninguém.</p>
-                    </div>
-                )}
+                {renderContent()}
             </main>
         </div>
     );

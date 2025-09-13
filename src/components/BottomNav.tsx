@@ -1,15 +1,13 @@
-
 import React from 'react';
-import HomeIcon from './HomeIcon';
-import VideoIcon from './VideoIcon';
-import PlayIcon from './PlayIcon';
-import MessageIcon from './MessageIcon';
+import HomeIcon from './icons/HomeIcon';
+import VideoIcon from './icons/VideoIcon';
+import PlayIcon from './icons/PlayIcon';
+import MessageIcon from './icons/MessageIcon';
 
 interface BottomNavProps {
     activeScreen: string;
     setActiveScreen: (screen: string) => void;
     onGoLiveClick: () => void;
-    onRefreshStreams: () => void;
 }
 
 const NavItem: React.FC<{ icon: React.ReactNode; label: string; active?: boolean; notification?: boolean; onClick?: () => void; }> = ({ icon, label, active, notification, onClick }) => (
@@ -22,12 +20,12 @@ const NavItem: React.FC<{ icon: React.ReactNode; label: string; active?: boolean
     </button>
 );
 
-const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, setActiveScreen, onGoLiveClick, onRefreshStreams }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, setActiveScreen, onGoLiveClick }) => {
     return (
         <footer className="fixed bottom-0 left-0 right-0 bg-[#1e1e1e] border-t border-gray-700 p-2 z-20 flex-shrink-0">
             <div className="flex justify-around items-center max-w-md mx-auto">
                 <NavItem icon={<HomeIcon className="w-6 h-6" />} label="Ao vivo" active={activeScreen === 'home'} onClick={() => setActiveScreen('home')} />
-                <NavItem icon={<VideoIcon className="w-6 h-6" />} label="Vídeo" onClick={onRefreshStreams} />
+                <NavItem icon={<VideoIcon className="w-6 h-6" />} label="Vídeo" onClick={() => setActiveScreen('home')} />
                 <button onClick={onGoLiveClick} className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-full shadow-lg -translate-y-4">
                     <PlayIcon />
                 </button>

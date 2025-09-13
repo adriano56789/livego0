@@ -1,6 +1,6 @@
 
 import React from 'react';
-import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
+import ChevronLeftIcon from '../components/ChevronLeftIcon';
 
 const HELP_CONTENT: { [key: string]: React.ReactNode } = {
     "Como fazer recargas?": (
@@ -126,7 +126,7 @@ const HelpTopicScreen: React.FC<HelpTopicScreenProps> = ({ setActiveScreen, topi
     );
 
     return (
-        <div className="bg-[#121212] min-h-screen text-white flex flex-col">
+        <div className="bg-[#121212] h-full text-white flex flex-col">
             <header className="p-4 flex items-center border-b border-gray-800 flex-shrink-0">
                 <button onClick={() => setActiveScreen('helpCenter')} className="absolute">
                     <ChevronLeftIcon className="w-6 h-6" />

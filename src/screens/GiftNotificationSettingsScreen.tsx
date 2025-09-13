@@ -58,7 +58,7 @@ const GiftNotificationSettingsScreen: React.FC<GiftNotificationSettingsScreenPro
                     Configuração de Notificação de Presentes
                 </h1>
             </header>
-            <main className="flex-grow overflow-y-auto p-4 no-scrollbar">
+            <main className="p-4 flex-grow overflow-y-auto no-scrollbar">
                 <p className="text-gray-400 mb-4 px-2">Controle quais notificações de presente aparecem na tela durante uma transmissão.</p>
                 <div className="space-y-px">
                     {gifts.map(gift => <GiftItem key={gift.name} {...gift} />)}

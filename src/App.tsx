@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -23,7 +22,7 @@ import EarningsInfoScreen from './screens/EarningsInfoScreen';
 import PushSettingsScreen from './screens/PushSettingsScreen';
 import AppVersionScreen from './screens/AppVersionScreen';
 import WhoCanMessageScreen from './screens/WhoCanMessageScreen';
-import BroadcasterProfileScreen, { selfUser, ProfileUser } from './screens/BroadcasterProfileScreen';
+import BroadcasterProfileScreen, { ProfileUser } from './screens/BroadcasterProfileScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import FollowingScreen from './screens/FollowingScreen';
 import FansScreen from './screens/FansScreen';
@@ -36,55 +35,16 @@ import GoLiveScreen from './screens/GoLiveScreen';
 import LiveStreamRoomScreen from './screens/LiveStreamRoomScreen';
 import StreamEndedSummaryScreen from './screens/StreamEndedSummaryScreen';
 import PurchaseConfirmationScreen from './screens/PurchaseConfirmationScreen';
-import ReminderScreen from './screens/ReminderScreen';
+import { ReminderScreen } from './screens/ReminderScreen';
 import HelpCenterScreen from './screens/HelpCenterScreen';
 import HelpTopicScreen from './screens/HelpTopicScreen';
-import { Stream } from './types';
-import { MOCK_STREAMS } from './constants';
-
-// Fix: Create a mock user to pass to ChatScreen, as the current navigation doesn't provide it.
-const mockChatUser: ProfileUser = {
-    name: 'Lest Go 500 K...',
-    avatarUrl: 'https://i.pravatar.cc/150?img=2',
-    coverUrl: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=2070&auto=format&fit=crop',
-    country: 'br',
-    id: '55218901',
-    age: 22,
-    gender: 'female',
-    level: 21,
-    location: 'Brasil, Rio de Janeiro',
-    distance: '12,34 km',
-    fans: '1.2M',
-    following: '150',
-    receptores: '5.6M',
-    enviados: '1.2K',
-    topFansAvatars: ['https://i.pravatar.cc/150?img=17', 'https://i.pravatar.cc/150?img=20'],
-    isLive: true,
-};
-
-const mockSupportUser: ProfileUser = {
-    name: 'Suporte LiveGo',
-    avatarUrl: 'https://picsum.photos/seed/support/150/150',
-    coverUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop',
-    country: 'br',
-    id: 'support-01',
-    age: 0,
-    gender: 'female',
-    level: 99,
-    location: 'Online',
-    distance: '0 km',
-    fans: 'N/A',
-    following: 'N/A',
-    receptores: 'N/A',
-    enviados: 'N/A',
-    topFansAvatars: [],
-    isLive: false,
-};
-
+import { api } from './services/apiService';
+import ApiLogger from './components/ApiLogger';
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeScreen, setActiveScreen] = useState('home'); 
+  const [currentUser, setCurrentUser] = useState<ProfileUser | null>(null);
+  const [activeScreen, setActiveScreen] = useState('home');
+  const [viewedUserId, setViewedUserId] = useState<string | null>(null);
   const [isGoLiveOpen, setIsGoLiveOpen] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const [showStreamSummary, setShowStreamSummary] = useState(false);
@@ -92,13 +52,24 @@ const App: React.FC = () => {
   const [selectedPurchasePackage, setSelectedPurchasePackage] = useState<{ amount: number; price: number } | null>(null);
   const [isReminderPanelOpen, setReminderPanelOpen] = useState(false);
   const [selectedHelpTopic, setSelectedHelpTopic] = useState<string | null>(null);
-  const [streams, setStreams] = useState<Stream[]>(MOCK_STREAMS);
   const [isStreamPrivate, setIsStreamPrivate] = useState(false);
+  const [chatUser, setChatUser] = useState<ProfileUser | null>(null);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
+  const isAuthenticated = !!currentUser;
+
+  const handleLogin = async () => {
+    try {
+      const user = await api.login();
+      const wallet = await api.fetchWallet(user.id);
+      const userWithWallet = { ...user, wallet };
+      setCurrentUser(userWithWallet);
+      setViewedUserId(user.id); // Default to viewing own profile after login
+    } catch (error) {
+        alert(`Falha no login: ${error}. Verifique se o servidor backend está rodando em http://localhost:3001.`);
+        console.error(error);
+    }
   };
-  
+
   const handleStartLive = (isPrivate: boolean) => {
     setIsStreamPrivate(isPrivate);
     setIsGoLiveOpen(false);
@@ -126,13 +97,34 @@ const App: React.FC = () => {
     setActiveScreen('helpTopic');
   };
 
-  const handleRefreshStreams = () => {
-    // Simple shuffle to simulate a refresh
-    setStreams(prevStreams => [...prevStreams].sort(() => Math.random() - 0.5));
+  const navigateTo = (screen: string, userId?: string) => {
+    if (userId) {
+      setViewedUserId(userId);
+    } else if (currentUser) {
+        if (['profile', 'following', 'fans', 'visitors', 'topFans'].includes(screen)) {
+            setViewedUserId(currentUser.id);
+        }
+    }
+    setActiveScreen(screen);
+  };
+  
+  const navigateToChat = async (userId: string) => {
+    try {
+        const user = await api.fetchUser(userId);
+        if(user) {
+            setChatUser(user);
+            setActiveScreen('chat');
+        } else {
+            alert(`Usuário com ID ${userId} não encontrado.`);
+        }
+    } catch(err) {
+        alert(`Erro ao buscar dados do usuário para o chat: ${err}`);
+    }
   };
 
+
   const renderContent = () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !currentUser) {
       return <LoginScreen onLogin={handleLogin} />;
     }
 
@@ -141,88 +133,119 @@ const App: React.FC = () => {
     }
 
     if (isLive) {
-      return <LiveStreamRoomScreen onEndLive={handleEndLive} isPrivate={isStreamPrivate} />;
+      return <LiveStreamRoomScreen onEndLive={handleEndLive} isPrivate={isStreamPrivate} currentUser={currentUser} />;
     }
 
     let screenContent;
     switch (activeScreen) {
       case 'home':
-        screenContent = <HomeScreen streams={streams} setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
+        screenContent = <HomeScreen setActiveScreen={navigateTo} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
         break;
       case 'profile':
-        screenContent = <ProfileScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <ProfileScreen setActiveScreen={navigateTo} currentUser={currentUser} />;
         break;
-      case 'broadcasterProfile':
-        screenContent = <BroadcasterProfileScreen user={selfUser} isSelf={true} setActiveScreen={setActiveScreen} />;
+      case 'broadcasterProfile': {
+        const BroadcasterProfileWrapper: React.FC<{userId: string; currentUserId: string;}> = ({ userId, currentUserId }) => {
+            const [user, setUser] = useState<ProfileUser | null>(null);
+            const [error, setError] = useState<string|null>(null);
+            const [loading, setLoading] = useState(true);
+            
+            useEffect(() => {
+                setError(null);
+                setUser(null);
+                setLoading(true);
+                api.fetchUser(userId).then(fetchedUser => {
+                    if (fetchedUser) setUser(fetchedUser);
+                    else setError("Usuário não encontrado.");
+                }).catch(err => {
+                    console.error(err);
+                    setError(err.message);
+                }).finally(() => setLoading(false));
+            }, [userId]);
+            
+            if (loading) return <div className="bg-black min-h-screen text-white flex justify-center items-center">Carregando perfil...</div>;
+            if (error) return <div className="bg-black min-h-screen text-white flex justify-center items-center text-red-400 p-4 text-center">Erro ao carregar perfil:<br/>{error}</div>;
+            if (!user) return <div className="bg-black min-h-screen text-white flex justify-center items-center">Usuário não encontrado.</div>;
+
+
+            return <BroadcasterProfileScreen 
+                        user={user} 
+                        isSelf={userId === currentUserId} 
+                        setActiveScreen={navigateTo}
+                        onStartChat={(userToChat) => navigateToChat(userToChat.id)}
+                   />;
+        };
+        screenContent = <BroadcasterProfileWrapper userId={viewedUserId || currentUser.id} currentUserId={currentUser.id} />;
         break;
+      }
       case 'editProfile':
-        screenContent = <EditProfileScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <EditProfileScreen setActiveScreen={navigateTo} currentUserId={currentUser.id} />;
         break;
       case 'following':
-        screenContent = <FollowingScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <FollowingScreen setActiveScreen={navigateTo} userId={viewedUserId || currentUser.id} />;
         break;
       case 'fans':
-        screenContent = <FansScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <FansScreen setActiveScreen={navigateTo} userId={viewedUserId || currentUser.id} />;
         break;
       case 'visitors':
-        screenContent = <VisitorsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <VisitorsScreen setActiveScreen={navigateTo} userId={currentUser.id} />;
         break;
       case 'broadcasterTopFans':
-        screenContent = <BroadcasterTopFansScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <BroadcasterTopFansScreen setActiveScreen={navigateTo} userId={viewedUserId || currentUser.id} />;
         break;
       case 'wallet':
-        screenContent = <WalletScreen setActiveScreen={setActiveScreen} onPurchaseClick={handleInitiatePurchase} />;
+        screenContent = <WalletScreen setActiveScreen={navigateTo} onPurchaseClick={handleInitiatePurchase} currentUserId={currentUser.id} />;
         break;
       case 'purchaseHistory':
-        screenContent = <PurchaseHistoryScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <PurchaseHistoryScreen setActiveScreen={navigateTo} />;
         break;
       case 'withdrawMethod':
-        screenContent = <WithdrawMethodScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <WithdrawMethodScreen setActiveScreen={navigateTo} />;
         break;
       case 'level':
-        screenContent = <LevelScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <LevelScreen setActiveScreen={navigateTo} />;
         break;
       case 'topFans':
-        screenContent = <TopFansScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <TopFansScreen setActiveScreen={navigateTo} userId={currentUser.id} />;
         break;
       case 'avatarProtection':
-        screenContent = <AvatarProtectionScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <AvatarProtectionScreen setActiveScreen={navigateTo} />;
         break;
       case 'reports':
-        screenContent = <ReportsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <ReportsScreen setActiveScreen={navigateTo} />;
         break;
       case 'blockList':
-        screenContent = <BlockListScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <BlockListScreen setActiveScreen={navigateTo} />;
         break;
       case 'settings':
-        screenContent = <SettingsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <SettingsScreen setActiveScreen={navigateTo} />;
         break;
       case 'connectedAccounts':
-        screenContent = <ConnectedAccountsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <ConnectedAccountsScreen setActiveScreen={navigateTo} />;
         break;
       case 'notificationSettings':
-        screenContent = <NotificationSettingsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <NotificationSettingsScreen setActiveScreen={navigateTo} />;
         break;
       case 'giftNotificationSettings':
-        screenContent = <GiftNotificationSettingsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <GiftNotificationSettingsScreen setActiveScreen={navigateTo} />;
         break;
       case 'privateLiveSettings':
-        screenContent = <PrivateLiveSettingsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <PrivateLiveSettingsScreen setActiveScreen={navigateTo} />;
         break;
       case 'privacySettings':
-        screenContent = <PrivacySettingsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <PrivacySettingsScreen setActiveScreen={navigateTo} />;
         break;
       case 'whoCanMessage':
-        screenContent = <WhoCanMessageScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <WhoCanMessageScreen setActiveScreen={navigateTo} />;
         break;
       case 'appVersion':
-        screenContent = <AppVersionScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <AppVersionScreen setActiveScreen={navigateTo} />;
         break;
       case 'earningsInfo':
-        screenContent = <EarningsInfoScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <EarningsInfoScreen setActiveScreen={navigateTo} />;
         break;
       case 'pushSettings':
-        screenContent = <PushSettingsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <PushSettingsScreen setActiveScreen={navigateTo} currentUserId={currentUser.id} />;
         break;
       case 'purchaseConfirmation':
         if (selectedPurchasePackage) {
@@ -236,57 +259,67 @@ const App: React.FC = () => {
         }
         break;
       case 'shop':
-        screenContent = <PlaceholderScreen setActiveScreen={setActiveScreen} screenName="Loja" />;
+        screenContent = <PlaceholderScreen setActiveScreen={navigateTo} screenName="Loja" />;
         break;
       case 'liveApp':
-        screenContent = <PlaceholderScreen setActiveScreen={setActiveScreen} screenName="Aplicativo ao Vivo" />;
+        screenContent = <PlaceholderScreen setActiveScreen={navigateTo} screenName="Aplicativo ao Vivo" />;
         break;
       case 'customerService':
-        screenContent = <PlaceholderScreen setActiveScreen={setActiveScreen} screenName="Atendimento ao Cliente" />;
+        screenContent = <PlaceholderScreen setActiveScreen={navigateTo} screenName="Atendimento ao Cliente" />;
         break;
       case 'helpCenter':
-        screenContent = <HelpCenterScreen setActiveScreen={setActiveScreen} onSelectTopic={handleSelectHelpTopic} />;
+        screenContent = <HelpCenterScreen setActiveScreen={navigateTo} onSelectTopic={handleSelectHelpTopic} />;
         break;
       case 'helpTopic':
         if (selectedHelpTopic) {
-          screenContent = <HelpTopicScreen setActiveScreen={setActiveScreen} topic={selectedHelpTopic} />;
+          screenContent = <HelpTopicScreen setActiveScreen={navigateTo} topic={selectedHelpTopic} />;
         } else {
           setActiveScreen('helpCenter');
           screenContent = null;
         }
         break;
       case 'messages':
-        screenContent = <MessagesScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <MessagesScreen setActiveScreen={navigateTo} currentUserId={currentUser.id} onConversationSelect={navigateToChat} />;
         break;
       case 'chat':
-        // Fix: Pass the required props `user`, `onBack`, and `onOpenProfile` to ChatScreen.
-        // This resolves the compilation error on line 177.
-        screenContent = (
-          <ChatScreen
-            user={mockChatUser}
-            onBack={() => setActiveScreen('messages')}
-            onOpenProfile={(user) => {
-              // Note: This navigates to the profile screen, which is currently hardcoded
-              // to show the self-user. A larger refactor would be needed to show other users' profiles.
-              setActiveScreen('broadcasterProfile');
-            }}
-          />
-        );
+        if (chatUser) {
+          screenContent = <ChatScreen user={chatUser} currentUser={currentUser} onBack={() => setActiveScreen('messages')} onOpenProfile={(user) => navigateTo('broadcasterProfile', user.id)} />;
+        } else {
+           setActiveScreen('messages');
+           screenContent = null;
+        }
         break;
-      case 'supportChat':
-        screenContent = (
-          <ChatScreen
-            user={mockSupportUser}
-            onBack={() => setActiveScreen('helpCenter')}
-            onOpenProfile={() => {}} // No profile for support agent
-          />
-        );
-        break;
+      case 'supportChat': {
+         const SupportChatWrapper = () => {
+            const [supportUser, setSupportUser] = useState<ProfileUser|null>(null);
+            const [error, setError] = useState<string|null>(null);
+            const [loading, setLoading] = useState(true);
+            
+            useEffect(() => {
+                setLoading(true);
+                api.fetchUser('support-01').then(user => {
+                    if(user) setSupportUser(user);
+                    else setError("Agente de suporte não encontrado.");
+                }).catch(err => {
+                    console.error(err);
+                    setError(err.message);
+                }).finally(() => setLoading(false));
+            }, []);
+
+            if(loading) return <div className="bg-black min-h-screen text-white flex justify-center items-center">Carregando chat de suporte...</div>;
+            if(error) return <div className="bg-black min-h-screen text-white flex justify-center items-center text-red-400">Erro: {error}</div>;
+            if(!supportUser) return <div className="bg-black min-h-screen text-white flex justify-center items-center">Agente de suporte não encontrado.</div>;
+            
+            return <ChatScreen user={supportUser} currentUser={currentUser} onBack={() => setActiveScreen('helpCenter')} onOpenProfile={() => {}} />;
+         }
+         screenContent = <SupportChatWrapper />;
+         break;
+      }
       case 'searchFriends':
-        screenContent = <SearchFriendsScreen setActiveScreen={setActiveScreen} />;
+        screenContent = <SearchFriendsScreen setActiveScreen={navigateTo} />;
         break;
       default:
-        screenContent = <HomeScreen streams={streams} setActiveScreen={setActiveScreen} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
+        screenContent = <HomeScreen setActiveScreen={navigateTo} onOpenReminderPanel={() => setReminderPanelOpen(true)} />;
     }
 
     const showBottomNav = activeScreen === 'home' || activeScreen === 'profile' || activeScreen === 'messages';
@@ -296,9 +329,10 @@ const App: React.FC = () => {
         <div className="flex-grow flex flex-col min-h-0">
           {screenContent}
         </div>
-        {showBottomNav && <BottomNav activeScreen={activeScreen} setActiveScreen={setActiveScreen} onGoLiveClick={() => setIsGoLiveOpen(true)} onRefreshStreams={handleRefreshStreams} />}
+        {showBottomNav && <BottomNav activeScreen={activeScreen} setActiveScreen={navigateTo} onGoLiveClick={() => setIsGoLiveOpen(true)} />}
         {isGoLiveOpen && <GoLiveScreen onClose={() => setIsGoLiveOpen(false)} onStartLive={handleStartLive} />}
         {isReminderPanelOpen && <ReminderScreen onClose={() => setReminderPanelOpen(false)} />}
+        {isAuthenticated && <ApiLogger />}
       </div>
     );
   };
