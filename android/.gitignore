@@ -1,0 +1,26 @@
+# Local configuration file
+local.properties
+
+# Built application files
+*.apk
+*.aab
+*.ap_
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Built outputs from Android Studio
+/build/
+
+# Keystore files (should never be committed)
+*.keystore
+*.jks
+
+# Gradle files
+.gradle/
+/captures/
+*.iml
+.idea/
+
+# Google Services file (if you add Firebase later)
+google-services.json
