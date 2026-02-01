@@ -68,3 +68,5 @@ A configuração do Nginx permanece a mesma. Ele é responsável por servir os a
     ```
 
 Seu site estará online, com frontend e backend configurados pelo mesmo arquivo `.env`.
+
+docker exec modest_maxwell ls -la /usr/local/srs/conf/

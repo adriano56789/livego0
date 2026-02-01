@@ -1,17 +1,14 @@
 import nodemailer from 'nodemailer';
 import 'dotenv/config';
-
-let transporter: nodemailer.Transporter | null = null;
-
+let transporter = null;
 /**
  * Inicializa e retorna a instância do transporter do Nodemailer.
  */
-const getTransporter = (): nodemailer.Transporter => {
+const getTransporter = () => {
     // Reutiliza a instância se já foi criada.
     if (transporter) {
         return transporter;
     }
-
     const emailConfig = {
         service: process.env.EMAIL_SERVICE || 'gmail',
         host: process.env.EMAIL_HOST,
@@ -22,40 +19,33 @@ const getTransporter = (): nodemailer.Transporter => {
             pass: process.env.EMAIL_PASSWORD
         }
     };
-
     // Valida as configurações essenciais
     if (!emailConfig.auth.user || !emailConfig.auth.pass) {
         console.error('[EMAIL_SERVICE] ERRO: Configuração de e-mail incompleta. Verifique suas variáveis de ambiente.');
         throw new Error('O serviço de e-mail não está configurado corretamente.');
     }
-
     // Cria a instância do transporter
     transporter = nodemailer.createTransport(emailConfig);
-
     // Verifica a conexão
-    transporter.verify(function(error, success) {
+    transporter.verify(function (error, success) {
         if (error) {
             console.error('Erro na configuração do e-mail:', error);
-        } else {
+        }
+        else {
             console.log('Servidor de e-mail configurado com sucesso!');
         }
     });
-
     return transporter;
 };
-
 export const emailService = {
-    sendVerificationCode: async (to: string, code: string) => {
+    sendVerificationCode: async (to, code) => {
         try {
             const mailer = getTransporter();
-            
             const fromName = process.env.EMAIL_FROM_NAME || 'LiveGo Suporte';
             const fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER || '';
-            
             if (!fromEmail) {
                 throw new Error('Endereço de e-mail do remetente não configurado.');
             }
-
             const mailOptions = {
                 from: `"${fromName}" <${fromEmail}>`,
                 to: to,
@@ -75,11 +65,11 @@ export const emailService = {
                     </div>
                 `,
             };
-
             const info = await mailer.sendMail(mailOptions);
             console.log(`[EMAIL_SERVICE] E-mail de verificação enviado para ${to}. Message ID: ${info.messageId}`);
             return info;
-        } catch (error) {
+        }
+        catch (error) {
             console.error(`[EMAIL_SERVICE] Falha ao enviar e-mail para ${to}:`, error);
             // Lança um erro mais genérico para ser capturado pelo controller e exibido ao usuário final.
             throw new Error('Falha ao enviar o e-mail de verificação. Verifique as configurações do servidor de e-mail.');

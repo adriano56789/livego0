@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { CloseIcon, CrownIcon, SolidDiamondIcon, StarIcon, VenusIcon, MarsIcon, TrophyIcon } from '../icons';
-import { User, RankedUser } from '../../types';
-import { LevelBadge } from '../LevelBadge';
-import { api } from '../../services/api';
-import { LoadingSpinner } from '../Loading';
+import { CloseIcon, CrownIcon, SolidDiamondIcon, StarIcon, VenusIcon, MarsIcon, TrophyIcon } from './icons';
+import { User, RankedUser } from '../types';
+import { LevelBadge } from './LevelBadge';
+import { api } from '../services/api';
+import { LoadingSpinner } from './Loading';
 
 interface ContributionRankingModalProps {
     onClose: () => void;

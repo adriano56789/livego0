@@ -1,4 +1,4 @@
-
+   
 export enum ToastType {
   Success = 'success',
   Error = 'error',
@@ -196,6 +196,7 @@ export interface GiftSendPayload {
 }
 
 export interface PurchaseRecord {
+  description: string;
   id: string;
   type: 'recharge' | 'gift' | 'withdrawal' | 'bonus' | 'fee';
   amountDiamonds?: number;

@@ -724,12 +724,21 @@ export const StreamRoom: React.FC<StreamRoomProps> = ({ streamer, onRequestEndSt
                         <div className="flex flex-col space-y-2">
                              <div className={`w-fit relative overflow-hidden flex items-center ${isJuFeFanClub ? 'bg-pink-600/90 rounded-2xl' : 'bg-black/40 rounded-full'} p-1 pr-2 space-x-2`}>
                                 <button onClick={(e) => { e.stopPropagation(); onViewProfile(streamerDisplayUser); }} className="flex items-center space-x-2 text-left">
-                                    <div className="relative w-10 h-10 flex items-center justify-center">
-                                        <div className="live-ring-animated">
-                                        <img src={streamerDisplayUser.avatarUrl} alt={streamerDisplayUser.name} className="w-8 h-8 rounded-full object-contain bg-black" />
+                                    <div className="relative">
+                                        <div className="relative mb-3 pointer-events-auto">
+                                            <img 
+                                                src={streamerDisplayUser.avatarUrl || '/default-avatar.png'} 
+                                                className="w-[50px] h-[50px] rounded-full border-2 border-white object-cover" 
+                                                alt={streamerDisplayUser.name || 'User'} 
+                                            />
+                                            {streamerDisplayUser && (
+                                                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#FE2C55] w-5 h-5 rounded-full flex items-center justify-center">
+                                                    <PlusIcon className="w-3 h-3 text-white" strokeWidth={4} />
+                                                </div>
+                                            )}
                                         </div>
                                         {ActiveFrameComponent && (
-                                            <div className="absolute inset-[-15%] w-[130%] h-[130%] pointer-events-none">
+                                            <div className="absolute inset-0 w-full h-full pointer-events-none">
                                                 <ActiveFrameComponent className={`w-full h-full ${frameGlowClass}`} />
                                             </div>
                                         )}
