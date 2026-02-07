@@ -42,6 +42,7 @@ import srsRoutes from './routes/srsRoutes.js';
 import { globalErrorHandler } from './middleware/errorHandler.js';
 import { setupWebSocket } from './controllers/websocketController.js';
 import { rateLimiter, sanitizeInput } from './middleware/security.js';
+import os from 'os';
 
 connectDB().catch(err => {
     console.error("ERRO CRÍTICO NA CONEXÃO COM O BANCO:", err);
@@ -105,7 +106,7 @@ app.get('/', (req: ExpressRequest, res: ExpressResponse) => {
 
 app.use(globalErrorHandler as any);
 
-const listenPort = config.port;
+const listenPort = 3000; // Porta alterada para 3000 para evitar conflito com o frontend
 
 server.on('error', (error: any) => {
     if (error.syscall !== 'listen') throw error;
@@ -117,16 +118,25 @@ server.on('error', (error: any) => {
     }
 });
 
+// Função simplificada para obter o endereço IP local
+// Retorna o IP fixo 192.168.3.12
+const getLocalIpAddress = () => 'localhost:';
+
+const localIp = getLocalIpAddress();
+
 server.listen(listenPort, '0.0.0.0', () => {
     const logMessage = isProduction ? `
         ################################################
         👑 API REST DEDICADA LIVEGO - ONLINE (PROD - HTTP)
-        🔒 PORTA INTERNA: ${listenPort}
+        🔒 PORTA: ${listenPort}
+        🌐 ACESSO: http://localhost:${listenPort}
         ################################################
         ` : `
         ################################################
         🔧 API REST DEDICADA LIVEGO - MODO DESENVOLVIMENTO
         ⚡️ PORTA: ${listenPort}
+        🌐 BACKEND: http://localhost:${listenPort}
+        🌐 FRONTEND: http://localhost:5173
         ################################################
         `;
     console.log(logMessage);

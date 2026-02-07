@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { srsController } from '../controllers/srsController.js';
 import { srsWebhookController } from '../controllers/srsWebhookController.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -26,7 +27,7 @@ router.get('/v1/sessions', srsController.getSessions);
 router.get('/v1/metrics', srsController.getMetrics);
 
 // --- SRS WebRTC Signaling ---
-router.post('/rtc/v1/publish', srsController.rtcPublish);
+router.post('/rtc/v1/publish', authMiddleware, srsController.rtcPublish);
 router.post('/rtc/v1/trickle/:sessionId', srsController.trickleIce);
 
 // --- SRS Webhooks (Callbacks) ---

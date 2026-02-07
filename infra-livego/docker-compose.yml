@@ -1,0 +1,49 @@
+services:
+  srs:
+    image: ossrs/srs:5
+    container_name: livego_srs_v2
+    restart: always
+    command: ["./objs/srs", "-c", "conf/srs.conf"]
+    ports:
+      - "19350:1935"
+      - "19850:1985"
+      - "8082:8080"
+      - "8002:8000/udp"
+    volumes:
+      - ./srs/conf/srs.conf:/usr/local/srs/conf/srs.conf
+    networks:
+      - livego_network
+
+  nginx:
+    image: nginx:latest
+    container_name: livego_nginx_v2
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "1935:1935"  # RTMP
+      - "1985:1985"  # API
+      - "8080:8080"  # HTTP
+      - "8000:8000/udp"  # WebRTC
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./nginx/logs:/var/log/nginx
+    networks:
+      - livego_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - srs
+
+  webrtc_tester:
+    image: ossrs/srs:5
+    container_name: livego_webrtc_v2
+    restart: always
+    networks:
+      - livego_network
+
+networks:
+  livego_network:
+    driver: bridge

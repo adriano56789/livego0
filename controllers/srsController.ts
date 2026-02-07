@@ -5,13 +5,15 @@ import { sendSuccess, sendError } from '../utils/response.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { UserModel } from '../models/User.js';
 import { StreamerModel } from '../models/Streamer.js';
+import { SessaoStreamModel } from '../models/SessaoStream.js';
 
 export const srsController = {
     // --- WebRTC Signaling ---
     
     rtcPublish: async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+        let sessao;
         try {
-            const { sdp, streamUrl } = (req as any).body;
+            const { sdp, streamUrl, metadata = {} } = (req as any).body;
             const userId = (req as AuthRequest).userId;
 
             if (!userId) {
@@ -29,9 +31,29 @@ export const srsController = {
                 return sendError(res, "Você não tem permissão para publicar nesta Stream URL.", 403);
             }
 
-            const result = await srsService.rtcPublish(sdp, streamUrl);
+            // Salvar a sessão de stream no banco de dados
+            const sessao = await SessaoStreamModel.create({
+                idUsuario: userId,
+                urlStream: streamUrl,
+                sdp,
+                status: 'ativo',
+                metadados: {
+                    userAgent: req.headers['user-agent'],
+                    ip: req.ip,
+                    ...metadata
+                }
+            });
+
+            const resultado = await srsService.rtcPublish(sdp, streamUrl);
             
-            return sendSuccess(res, result);
+            // Atualizar a sessão com o ID da sessão do SRS
+            sessao.idSessao = resultado.sessionId;
+            await sessao.save();
+
+            return sendSuccess(res, {
+                ...resultado,
+                sessaoId: sessao._id.toString()
+            });
         } catch (error) {
             next(error);
         }
