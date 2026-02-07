@@ -74,33 +74,58 @@ export const authController = {
         try {
             const { email, code } = (req as any).body;
             if (!email || !code) {
+                console.log('[VERIFY_EMAIL] Erro: Email ou código não fornecidos');
                 return sendError(res, "Email e código são obrigatórios.", 400);
             }
-    
-            const user = await UserModel.findOne({
-                email: email.toLowerCase().trim(),
-                emailVerified: false
+            
+            const normalizedEmail = email.toLowerCase().trim();
+            const normalizedCode = String(code).trim();
+            
+            console.log(`[VERIFY_EMAIL] Iniciando verificação para: ${normalizedEmail}`, { 
+                email: normalizedEmail, 
+                code: normalizedCode 
             });
     
+            // Força a inclusão dos campos que estão com select: false
+            const user = await UserModel.findOne({
+                email: normalizedEmail,
+                emailVerified: false
+            }).select('+emailVerificationCode +emailVerificationExpires');
+            
+            console.log(`[VERIFY_EMAIL] Usuário encontrado:`, user ? 'Sim' : 'Não');
+    
             if (!user) {
+                console.log(`[VERIFY_EMAIL] Erro: Nenhum registro pendente para ${normalizedEmail} ou já verificado`);
                 return sendError(res, "Nenhum registro pendente para este e-mail ou já foi verificado.", 404);
             }
+            
+            const storedCode = String(user.emailVerificationCode || '');
+            console.log(`[VERIFY_EMAIL] Código armazenado: ${storedCode} (${typeof storedCode})`);
+            console.log(`[VERIFY_EMAIL] Código recebido: ${normalizedCode} (${typeof normalizedCode})`);
+            console.log(`[VERIFY_EMAIL] Expiração: ${user.emailVerificationExpires}`);
     
-            if (user.emailVerificationCode !== code) {
+            if (storedCode !== normalizedCode) {
+                console.log('[VERIFY_EMAIL] Erro: Código de verificação inválido');
                 return sendError(res, "Código de verificação inválido.", 400);
             }
-    
-            if (user.emailVerificationExpires && user.emailVerificationExpires < new Date()) {
+            
+            const now = new Date();
+            if (user.emailVerificationExpires && user.emailVerificationExpires < now) {
+                console.log(`[VERIFY_EMAIL] Erro: Código expirou em ${user.emailVerificationExpires}, horário atual: ${now}`);
                 return sendError(res, "Código expirou. Registre-se novamente.", 410);
             }
     
             user.emailVerified = true;
             user.emailVerificationCode = undefined;
             user.emailVerificationExpires = undefined;
+            
+            console.log(`[VERIFY_EMAIL] Atualizando usuário ${user.id} como verificado`);
             await user.save();
     
+            console.log(`[VERIFY_EMAIL] E-mail ${normalizedEmail} verificado com sucesso`);
             return sendSuccess(res, null, "E-mail verificado com sucesso! Você já pode fazer o login.");
         } catch (error) {
+            console.error('[VERIFY_EMAIL] Erro inesperado:', error);
             next(error);
         }
     },

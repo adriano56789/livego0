@@ -1,44 +1,19 @@
+﻿version: '3.8'
+
 services:
   mongodb:
-    image: mongo:6.0
-    container_name: livego_mongodb
-    restart: unless-stopped
+    image: mongo:latest
+    container_name: mongodb
     ports:
-      - "127.0.0.1:27017:27017"
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: adriano123
+      MONGO_INITDB_DATABASE: api
     volumes:
-      - mongodb_data:/data/db
-    networks:
-      - livego_network
-    command: ["mongod", "--bind_ip_all"]
-    healthcheck:
-      test: ["CMD", "mongosh", "-u", "admin", "-p", "adriano123", "--eval", "db.runCommand({ ping: 1 })"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-  srs:
-    image: ossrs/srs:5
-    container_name: livego_srs
-    restart: unless-stopped
-    volumes:
-      - ./srs.conf:/usr/local/srs/conf/srs.conf
-    ports:
-      - "1935:1935"
-      - "1985:1985"
-      - "8080:8080"
-      - "8000:8000/udp"
-    networks:
-      - livego_network
-
-# O serviço de backend está sendo executado no host via PM2, não no Docker.
-# O serviço de frontend é servido por Nginx diretamente no host, não no Docker.
-
-networks:
-  livego_network:
-    driver: bridge
+      - mongo_data:/data/db
+      - ./mongodb/conf/mongod.conf:/etc/mongod.conf
+    command: --config /etc/mongod.conf
 
 volumes:
-  mongodb_data:
+  mongo_data:
