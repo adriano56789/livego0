@@ -67,13 +67,18 @@ class SrsService {
      * O Frontend envia o Offer, o SRS processa e retorna o Answer.
      */
     async rtcPublish(sdp: string, streamUrl: string): Promise<{ sdp: string, sessionId: string }> {
+        // Garante que a URL base termine com uma barra
+        const baseUrl = this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`;
+        const apiUrl = `${baseUrl}rtc/v1/publish/`;
+        
         const payload = {
-            api: `${this.baseUrl}/rtc/v1/publish`,
+            api: apiUrl,
             streamurl: streamUrl,
             sdp: sdp
         };
 
-        const response = await this.request('POST', '/rtc/v1/publish', payload);
+        // Adiciona a barra no final do endpoint
+        const response = await this.request('POST', '/rtc/v1/publish/', payload);
         
         if (!response.sdp) {
             throw new Error("SRS não retornou o SDP Answer.");
