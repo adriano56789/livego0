@@ -6,6 +6,7 @@ import { api } from './services/api';
 import BeautyEffectsPanel from './components/live/BeautyEffectsPanel';
 import { webSocketManager } from './services/websocket';
 import { LoadingSpinner } from './components/Loading';
+import { servicoWebRTC } from './services/webrtcService';
 
 interface GoLiveScreenProps {
   currentUser: User;
@@ -154,30 +155,59 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ currentUser, onClose, onSta
     const roomName = `${currentUser.id}_${Date.now()}`;
     const streamData: Partial<Streamer> = {
         id: roomName,
-        hostId: currentUser.id, name: `Live de ${currentUser.name}`, avatar: currentUser.avatarUrl,
-        thumbnail: 'https://picsum.photos/seed/live/400/600', isPrivate: liveSettings.isPrivate,
+        hostId: currentUser.id, 
+        name: `Live de ${currentUser.name}`, 
+        avatar: currentUser.avatarUrl,
+        thumbnail: 'https://picsum.photos/seed/live/400/600', 
+        isPrivate: liveSettings.isPrivate,
         category: liveSettings.isPrivate ? 'Privada' : liveSettings.category,
-        description: `Live de ${currentUser.name}`, location: currentUser.location || 'Brasil'
+        description: `Live de ${currentUser.name}`, 
+        location: currentUser.location || 'Brasil',
+        streamUrl: roomName
     };
     
     try {
-        const srsRtcUrl = (import.meta as any).env.VITE_SRS_RTC_URL || 'webrtc://localhost/live';
+        const srsRtcUrl = (import.meta as any).env.VITE_SRS_RTC_URL || 'webrtc://72.60.249.175/live';
         const streamUrl = `${srsRtcUrl}/${roomName}`;
         
         addToast(ToastType.Info, "Conectando ao servidor de mídia WebRTC...");
-        await webSocketManager.startStreaming(stream, streamUrl);
         
+        // Inicializa o serviço WebRTC
+        const webrtcService = await servicoWebRTC();
+        
+        // Publica o stream usando o serviço WebRTC
+        await webrtcService.publicar({
+            stream,
+            urlStream: streamUrl,
+            aoMudarEstadoConexao: (estado) => {
+                console.log('Estado da conexão WebRTC:', estado);
+                if (estado === 'connected') {
+                    addToast(ToastType.Success, "Conexão WebRTC estabelecida!");
+                } else if (estado === 'disconnected' || estado === 'failed' || estado === 'closed') {
+                    addToast(ToastType.Error, `Conexão WebRTC ${estado}. Tentando reconectar...`);
+                }
+            },
+            aoOcorrerErro: (erro) => {
+                console.error("Erro na conexão WebRTC:", erro);
+                addToast(ToastType.Error, `Erro na transmissão: ${erro.message}`);
+            }
+        });
+        
+        // Registra a transmissão no servidor
         await api.streams.startBroadcast({ streamId: streamData.id! });
         
-        addToast(ToastType.Success, "Transmissão pública iniciada!");
+        addToast(ToastType.Success, "Transmissão WebRTC iniciada com sucesso!");
         onStartStream(streamData);
         webSocketManager.emit('stream:started', streamData);
 
     } catch (error: any) {
-        console.error("Erro ao iniciar a arquitetura de streaming:", error);
+        console.error("Erro ao iniciar a transmissão WebRTC:", error);
         addToast(ToastType.Error, `Falha na transmissão: ${error.message}`);
         setIsStreaming(false);
-        webSocketManager.stopStreaming();
+        // Para qualquer stream em andamento
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
     }
   };
 

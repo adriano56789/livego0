@@ -93,3 +93,5 @@ A configuração em `nginx/default.conf` está simplificada.
 -   **Ação:** Use o Certbot para gerar certificados SSL e descomente o bloco `server { listen 443 ssl; ... }` no arquivo de configuração do Nginx, garantindo que todo o tráfego seja seguro. Isso é **obrigatório** para o WebRTC funcionar corretamente nos navegadores.
 
 Com estes passos, a infraestrutura está 100% focada no SRS, pronta para uma plataforma de streaming moderna e baseada em WebRTC.
+
+docker exec -it mongodb mongosh -u admin -p adriano123 --authenticationDatabase admin

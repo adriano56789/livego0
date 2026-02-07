@@ -161,6 +161,7 @@ export interface Streamer {
   isFollowed?: boolean;
   relationship?: 'none' | 'following' | 'friend';
   isLive?: boolean;
+  streamUrl?: string;
 }
 
 export interface Gift {
