@@ -38,6 +38,9 @@ import FullApiCheckupScreen from './components/screens/FullApiCheckupScreen';
 import PaymentFeedbackScreen from './components/screens/PaymentFeedbackScreen';
 
 
+// Contador global para garantir IDs únicos nos toasts
+let toastCounter = 0;
+
 const AppContent: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -53,7 +56,7 @@ const AppContent: React.FC = () => {
     const [visitors, setVisitors] = useState<User[]>([]);
 
     const addToast = useCallback((type: ToastType, message: string) => {
-        const id = Date.now();
+        const id = `toast-${Date.now()}-${toastCounter++}`;
         setToasts(prev => [...prev, { id, type, message }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
     }, []);
@@ -121,6 +124,47 @@ const AppContent: React.FC = () => {
 
     const [streamers, setStreamers] = useState<Streamer[]>([]);
     const [isLoadingStreams, setIsLoadingStreams] = useState(false);
+    
+    // Efeito para gerenciar eventos do WebSocket
+    useEffect(() => {
+        if (!isAuthenticated) return;
+        
+        // Atualiza a lista de streamers quando uma nova transmissão é iniciada
+        const handleStreamStarted = (newStream: Streamer) => {
+            console.log('[WebSocket] Nova transmissão iniciada:', newStream);
+            setStreamers(prevStreamers => {
+                // Verifica se o stream já existe na lista
+                const exists = prevStreamers.some(s => s.id === newStream.id);
+                if (exists) {
+                    // Atualiza o stream existente
+                    return prevStreamers.map(s => 
+                        s.id === newStream.id ? { ...s, ...newStream, isLive: true } : s
+                    );
+                } else {
+                    // Adiciona o novo stream à lista
+                    return [...prevStreamers, { ...newStream, isLive: true }];
+                }
+            });
+        };
+        
+        // Remove o stream da lista quando uma transmissão é encerrada
+        const handleStreamEnded = (data: { streamId: string }) => {
+            console.log('[WebSocket] Transmissão encerrada:', data.streamId);
+            setStreamers(prevStreamers => 
+                prevStreamers.filter(s => s.id !== data.streamId)
+            );
+        };
+        
+        // Registra os listeners
+        webSocketManager.on('stream:started', handleStreamStarted);
+        webSocketManager.on('stream:ended', handleStreamEnded);
+        
+        // Limpeza dos listeners
+        return () => {
+            webSocketManager.off('stream:started', handleStreamStarted);
+            webSocketManager.off('stream:ended', handleStreamEnded);
+        };
+    }, [isAuthenticated]);
     const [activeTab, setActiveTab] = useState('popular');
     const [selectedRegion, setSelectedRegion] = useState('global');
     const [followingUsers, setFollowingUsers] = useState<User[]>([]);
@@ -216,16 +260,24 @@ const AppContent: React.FC = () => {
     };
     
     const handleStartStream = (streamData: Partial<Streamer>) => {
+        // Usa os dados da transmissão fornecidos, que já foram criados no backend
         const newStreamer: Streamer = {
-            id: `live_${Date.now()}`,
+            id: streamData.id || `live_${Date.now()}`,
             hostId: currentUser!.id,
-            name: currentUser!.name,
-            avatar: currentUser!.avatarUrl,
-            location: currentUser!.location,
+            name: streamData.name || `Live de ${currentUser!.name}`,
+            avatar: streamData.avatar || currentUser!.avatarUrl,
+            location: streamData.location || currentUser!.location || 'Brasil',
             viewers: 1,
             tags: [],
-            ...streamData
+            category: streamData.category || 'Geral',
+            isPrivate: streamData.isPrivate || false,
+            streamUrl: streamData.streamUrl,
+            thumbnail: streamData.thumbnail || currentUser!.avatarUrl,
+            description: streamData.description || `Live de ${currentUser!.name}`,
+            isLive: true
         };
+        
+        console.log('[App] Iniciando transmissão:', newStreamer);
         setActiveStream(newStreamer);
         setIsGoLiveOpen(false);
 
@@ -244,6 +296,9 @@ const AppContent: React.FC = () => {
             isAutoPrivateInviteEnabled: false,
             startTime: Date.now()
         });
+        
+        // Notifica outros clientes sobre a nova transmissão
+        webSocketManager.emit('stream:started', newStreamer);
     };
     
     const handleEndStream = () => {

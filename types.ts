@@ -7,7 +7,7 @@ export enum ToastType {
 }
 
 export interface ToastData {
-  id: number;
+  id: string;
   type: ToastType;
   message: string;
 }

@@ -21,7 +21,9 @@ const ENV_CONFIG = {
       'https://[::1]:*',
       'https://livego.store', // Also allow production domain in development for testing
       'https://www.livego.store',
-      'https://api.livego.store'
+      'https://api.livego.store',
+      'http://localhost:5173', // Adicionado para o Vite dev server
+      'http://127.0.0.1:5173'  // Alternativa para localhost
     ]
   },
   test: {

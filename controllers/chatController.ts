@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { ConversationModel } from '../models/Conversation.js';
 import { UserModel } from '../models/User.js';
+import { MessageModel } from '../models/Message.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { Server } from 'socket.io';
 
@@ -84,6 +85,39 @@ export const chatController = {
             }));
             return sendSuccess(res, formattedRanking);
         } catch (err) {
+            return sendSuccess(res, []);
+        }
+    },
+
+    getStreamMessages: async (req: AuthRequest, res: Response) => {
+        try {
+            const { roomId } = req.params;
+            
+            if (!roomId) {
+                return sendError(res, 'ID da sala não fornecido', 400);
+            }
+            
+            // Busca as mensagens do banco de dados para a sala específica
+            // Ordena por data de criação (mais antigas primeiro) e limita a 100 mensagens
+            const messages = await MessageModel.find({ chatId: roomId })
+                .sort({ createdAt: 1 }) // Ordena por data de criação (mais antigas primeiro)
+                .limit(100) // Limita a 100 mensagens
+                .lean();
+            
+            // Formata as mensagens para o formato esperado pelo frontend
+            const formattedMessages = messages.map(msg => ({
+                id: msg.id,
+                type: 'chat',
+                message: msg.text,
+                userId: msg.fromUserId,
+                timestamp: msg.createdAt ? new Date(msg.createdAt).getTime() : Date.now(),
+                // Adicione outros campos necessários aqui
+            }));
+            
+            return sendSuccess(res, formattedMessages);
+        } catch (err) {
+            console.error('Erro ao buscar mensagens do chat:', err);
+            // Em caso de erro, retorna um array vazio para não quebrar o frontend
             return sendSuccess(res, []);
         }
     }

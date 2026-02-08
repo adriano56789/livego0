@@ -118,11 +118,19 @@ server.on('error', (error: any) => {
     }
 });
 
-// Função simplificada para obter o endereço IP local
-// Retorna o IP fixo 192.168.3.12
-const getLocalIpAddress = () => 'localhost:';
-
-const localIp = getLocalIpAddress();
+// Função para obter o endereço IP local
+const getLocalIpAddress = () => {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name] || []) {
+            // Ignora endereços internos e não IPv4
+            if ('IPv4' === iface.family && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return 'localhost';
+};
 
 server.listen(listenPort, '0.0.0.0', () => {
     const logMessage = isProduction ? `

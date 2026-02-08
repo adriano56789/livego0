@@ -132,6 +132,7 @@ export const api = {
     chats: {
         listConversations: (): Promise<any[]> => fetcher('GET', '/chats/conversations'),
         start: (userId: string) => fetcher('POST', '/chats/start', { userId }),
+        getMessages: (roomId: string): Promise<any[]> => fetcher('GET', `/chats/stream/${roomId}/messages`),
         sendMessage: (roomId: string, messagePayload: any) => fetcher('POST', `/chats/stream/${roomId}/message`, messagePayload),
     },
     gifts: {

@@ -61,6 +61,7 @@ router.delete('/users/me/reminders/:id', authMiddleware, userController.removeRe
 router.get('/chats/conversations', authMiddleware, chatController.getConversations);
 router.post('/chats/start', authMiddleware, chatController.start);
 router.post('/chats/stream/:roomId/message', authMiddleware, chatController.sendMessageToStream);
+router.get('/chats/stream/:roomId/messages', authMiddleware, chatController.getStreamMessages);
 
 // --- Streams ---
 router.get('/live/:category', authMiddleware, streamController.listByCategory);

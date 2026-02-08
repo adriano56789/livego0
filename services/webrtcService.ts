@@ -1,4 +1,3 @@
-import { srsService } from './srsService';
 import TurnConfigService, { TurnServerConfig } from './turnConfigService';
 
 // Interface para configuração do WebRTC
@@ -27,7 +26,7 @@ export class ServicoWebRTC {
   private stream: MediaStream | null = null;
   private idSessao: string | null = null;
 
-  constructor(private configuracao: RTCConfig) {}
+  constructor(private configuracao: RTCConfig) { }
 
   /**
    * Publica um stream de mídia usando WebRTC
@@ -72,10 +71,42 @@ export class ServicoWebRTC {
       await this.conexaoPar.setLocalDescription(oferta);
 
       // Envia a oferta para o servidor SRS e obtém a resposta
-      const { sdp: resposta, sessionId } = await srsService.rtcPublish(
-        oferta.sdp || '',
-        urlStream
-      );
+      const srsApiUrl = (import.meta as any).env.VITE_SRS_API_URL || 'http://72.60.249.175:1985';
+      const publishUrl = `${srsApiUrl}/rtc/v1/publish/`;
+
+      console.log('[WebRTC] Enviando SDP Offer para SRS:', publishUrl);
+
+      const payload = {
+        api: publishUrl,
+        streamurl: urlStream,
+        sdp: oferta.sdp || ''
+      };
+
+      const response = await fetch(publishUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`SRS retornou erro ${response.status}: ${errorText}`);
+      }
+
+      const responseData = await response.json();
+
+      if (responseData.code !== 0) {
+        throw new Error(`SRS API Error Code ${responseData.code}: ${JSON.stringify(responseData)}`);
+      }
+
+      if (!responseData.sdp) {
+        throw new Error('SRS não retornou o SDP Answer.');
+      }
+
+      const resposta = responseData.sdp;
+      const sessionId = responseData.sessionid;
 
       this.idSessao = sessionId;
 
@@ -101,12 +132,12 @@ export class ServicoWebRTC {
       this.conexaoPar.close();
       this.conexaoPar = null;
     }
-    
+
     if (this.stream) {
       this.stream.getTracks().forEach(faixa => faixa.stop());
       this.stream = null;
     }
-    
+
     this.idSessao = null;
   }
 
@@ -118,12 +149,12 @@ export class ServicoWebRTC {
       this.conexaoPar.close();
       this.conexaoPar = null;
     }
-    
+
     if (this.stream) {
       this.stream.getTracks().forEach(faixa => faixa.stop());
       this.stream = null;
     }
-    
+
     this.idSessao = null;
   }
 }
@@ -132,7 +163,7 @@ export class ServicoWebRTC {
 async function obterConfiguracaoRTC(): Promise<RTCConfig> {
   try {
     const iceServers = await TurnConfigService.getTurnConfig();
-    
+
     return {
       iceServers: iceServers as any[],
       // Configurações de desempenho e segurança
@@ -159,6 +190,6 @@ export async function obterServicoWebRTC(): Promise<ServicoWebRTC> {
   }
   return instanciaServicoWebRTC;
 }
- 
+
 // Exporta a função para obter o serviço WebRTC
 export { obterServicoWebRTC as servicoWebRTC };
