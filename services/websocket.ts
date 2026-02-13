@@ -1,7 +1,13 @@
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 
-const SOCKET_URL = (import.meta as any).env.VITE_WS_URL;
+// Usa a URL do ambiente ou fallback para localhost:3000
+const SOCKET_URL = (import.meta as any).env.VITE_WS_URL || 'http://localhost:3000';
+
+// Força o protocolo WebSocket para desenvolvimento local
+const WS_URL = SOCKET_URL.replace(/^http/, 'ws');
+
+console.log('[WebSocket] Conectando ao servidor WebSocket em:', WS_URL);
 
 export class WebSocketManager {
     private socket: Socket | null = null;
@@ -9,16 +15,56 @@ export class WebSocketManager {
     private peerConnection: RTCPeerConnection | null = null;
 
     connect(userId: string) {
-        if (this.socket) return;
-        this.socket = io(SOCKET_URL, {
+        if (this.socket) {
+            console.log('[WebSocket] Já existe uma conexão ativa. Reconectando...');
+            this.disconnect();
+        }
+        
+        console.log(`[WebSocket] Iniciando conexão com ${WS_URL} para o usuário ${userId}`);
+        
+        this.socket = io(WS_URL, {
             query: { userId },
-            transports: ['websocket'],
+            transports: ['websocket', 'polling'],
             reconnection: true,
-            reconnectionAttempts: 5
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000,
+            forceNew: true,
+            withCredentials: true,
+            extraHeaders: {
+                'Access-Control-Allow-Origin': '*'
+            }
         });
 
-        this.socket.on('connect', () => console.log(`[WS] Conectado ao Servidor em: ${SOCKET_URL}`));
+        // Configuração de eventos do socket
+        this.socket.on('connect', () => {
+            console.log(`[WebSocket] Conectado ao servidor em: ${WS_URL}`, {
+                socketId: this.socket?.id,
+                userId: userId
+            });
+            
+            // Força a reconexão se o socket for desconectado inesperadamente
+            this.socket?.on('disconnect', (reason) => {
+                console.log(`[WebSocket] Desconectado: ${reason}`);
+                if (reason === 'io server disconnect' || reason === 'io client disconnect') {
+                    console.log('[WebSocket] Tentando reconectar...');
+                    setTimeout(() => this.connect(userId), 1000);
+                }
+            });
+            
+            this.socket?.on('connect_error', (error) => {
+                console.error('[WebSocket] Erro de conexão:', error.message);
+            });
+            
+            this.socket?.on('error', (error) => {
+                console.error('[WebSocket] Erro no socket:', error);
+            });
+        });
+        
+        // Encaminha todos os eventos para os handlers registrados
         this.socket.onAny((event: string, data: any) => {
+            console.log(`[WebSocket] Evento recebido: ${event}`, data);
             this.triggerHandlers(event, data);
         });
     }
@@ -162,12 +208,13 @@ export class WebSocketManager {
             await this.peerConnection.setLocalDescription(offer);
             console.log('[WebRTC] Descrição local definida com sucesso');
 
-            // Usa o servidor SRS local
-            const srsApiUrl = (import.meta as any).env.VITE_SRS_API_URL || 'http://localhost:1985';
+            // Usa o servidor SRS local na porta 19850 conforme configurado no docker-compose
+            const srsApiUrl = (import.meta as any).env.VITE_SRS_API_URL || 'http://localhost:19850';
             const publishUrl = `${srsApiUrl}/rtc/v1/publish/`;
             console.log('[WebRTC] Usando SRS em:', srsApiUrl);
 
             console.log('[WebRTC] Enviando SDP Offer para SRS:', publishUrl);
+            console.log('[WebRTC] Stream URL:', streamUrl);
 
             const payload = {
                 api: publishUrl,
@@ -175,39 +222,57 @@ export class WebSocketManager {
                 sdp: offer.sdp || ''
             };
 
-            const response = await fetch(publishUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`SRS retornou erro ${response.status}: ${errorText}`);
-            }
-
-            const responseData = await response.json();
-
-            if (responseData.code !== 0) {
-                throw new Error(`SRS API Error Code ${responseData.code}: ${JSON.stringify(responseData)}`);
-            }
-
-            if (!responseData.sdp) {
-                throw new Error("SRS não retornou uma resposta SDP válida.");
-            }
-
-            const answerSdp = responseData.sdp;
-            console.log('[WebRTC] Resposta SDP do SRS recebida:', answerSdp);
+            console.log('[WebRTC] Payload da requisição:', JSON.stringify({
+                ...payload,
+                sdp: payload.sdp ? '*** SDP OCULTADO ***' : 'vazio'
+            }));
 
             try {
+                const response = await fetch(publishUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                console.log('[WebRTC] Resposta do servidor SRS:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('[WebRTC] Erro na resposta do SRS:', errorText);
+                    throw new Error(`SRS retornou erro ${response.status}: ${errorText}`);
+                }
+
+                const responseData = await response.json();
+                console.log('[WebRTC] Resposta SRS:', responseData);
+                
+                if (responseData.code !== 0) {
+                    throw new Error(`SRS API Error: ${responseData.code} - ${JSON.stringify(responseData)}`);
+                }
+
+                if (!responseData.sdp) {
+                    throw new Error("SRS não retornou uma resposta SDP válida.");
+                }
+
+                const answerSdp = responseData.sdp;
+                console.log('[WebRTC] Resposta SDP do SRS recebida:', answerSdp);
+
                 await this.peerConnection.setRemoteDescription(
                     new RTCSessionDescription({ type: 'answer', sdp: answerSdp })
                 );
                 console.log('[WebRTC] Descrição remota definida com sucesso');
+
             } catch (error) {
-                console.error('[WebRTC] Erro ao definir descrição remota:', error);
+                console.error('[WebRTC] Erro na requisição para SRS:', {
+                    error: error.message,
+                    url: publishUrl,
+                    timestamp: new Date().toISOString()
+                });
                 throw error;
             }
 

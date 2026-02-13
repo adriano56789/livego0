@@ -13,6 +13,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Obtendo __filename e __dirname em módulos ES
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -81,10 +82,28 @@ const server = http.createServer(app);
 const io = new Server(server, { 
     cors: {
         origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
-        methods: ['GET', 'POST'],
+        methods: ['GET', 'POST', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true
     },
-    transports: ['websocket'] 
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
+    pingTimeout: 10000,
+    pingInterval: 5000,
+    cookie: false
+});
+
+// Log de conexões e desconexões
+io.on('connection', (socket) => {
+    console.log(`[Socket.IO] Cliente conectado: ${socket.id}`);
+    
+    socket.on('disconnect', () => {
+        console.log(`[Socket.IO] Cliente desconectado: ${socket.id}`);
+    });
+    
+    socket.on('error', (error) => {
+        console.error(`[Socket.IO] Erro no socket ${socket.id}:`, error);
+    });
 });
 
 setupWebSocket(io);
