@@ -163,7 +163,8 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ currentUser, onClose, onSta
     try {
         const srsRtcUrl = (import.meta as any).env.VITE_SRS_RTC_URL || 'webrtc://localhost/live';
         const streamUrl = `${srsRtcUrl}/${roomName}`;
-        
+        streamData.streamUrl = streamUrl;
+
         addToast(ToastType.Info, "Conectando ao servidor de mídia WebRTC...");
         await webSocketManager.startStreaming(stream, streamUrl);
         

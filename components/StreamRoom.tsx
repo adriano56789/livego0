@@ -136,6 +136,8 @@ const LuckyGiftModal: React.FC<{ isOpen: boolean; onClose: () => void; giftPaylo
 export const StreamRoom: React.FC<StreamRoomProps> = ({ streamer, onRequestEndStream, onLeaveStreamView, onStartPKBattle, onViewProfile, currentUser, onOpenWallet, onFollowUser, onOpenPrivateChat, onOpenPrivateInviteModal, setActiveScreen, onOpenPKTimerSettings, onOpenFans, onOpenFriendRequests, updateUser, liveSession, updateLiveSession, logLiveEvent, onStreamUpdate, addToast, followingUsers, streamers, onSelectStream, onOpenVIPCenter, onOpenFanClubMembers }) => {
     const { t, language } = useTranslation();
     const videoRef = useRef<HTMLVideoElement>(null);
+    const viewerPcRef = useRef<RTCPeerConnection | null>(null);
+    const remoteStreamRef = useRef<MediaStream | null>(null);
     const [isUiVisible, setIsUiVisible] = useState(true);
     const [isToolsOpen, setIsToolsOpen] = useState(false);
     const [isBeautyPanelOpen, setBeautyPanelOpen] = useState(false);
@@ -195,15 +197,82 @@ export const StreamRoom: React.FC<StreamRoomProps> = ({ streamer, onRequestEndSt
     }, [streamer.hostId]);
     
     useEffect(() => {
-        // Lógica de conexão WebRTC removida.
-        // O componente agora aguarda uma implementação de cliente WebRTC para SRS.
-        setIsConnecting(false); 
+        if (isBroadcaster) {
+            setIsConnecting(false);
+            return;
+        }
 
-        // Limpeza
-        return () => {
-            // Lógica de desconexão WebRTC (a ser implementada)
+        let isActive = true;
+
+        const startViewerConnection = async () => {
+            setIsConnecting(true);
+
+            try {
+                const streamUrl = streamer.streamUrl || `webrtc://localhost/live/${streamer.id}`;
+                const config: RTCConfiguration = {
+                    iceServers: [
+                        {
+                            urls: ['stun:72.60.249.175:3478', 'turn:72.60.249.175:3478'],
+                            username: 'livego',
+                            credential: 'adriano123',
+                        },
+                    ],
+                    iceTransportPolicy: 'all',
+                };
+
+                const pc = new RTCPeerConnection(config);
+                viewerPcRef.current = pc;
+
+                const remoteStream = new MediaStream();
+                remoteStreamRef.current = remoteStream;
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = remoteStream;
+                }
+
+                pc.ontrack = (event) => {
+                    event.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+                };
+
+                const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+                await pc.setLocalDescription(offer);
+
+                const { sdp } = await api.srs.rtcPlay(offer.sdp || '', streamUrl);
+                await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp }));
+
+                if (videoRef.current) {
+                    await videoRef.current.play().catch(() => undefined);
+                }
+
+                if (isActive) {
+                    setIsConnecting(false);
+                }
+            } catch (error) {
+                console.error('Falha ao conectar na transmissão WebRTC:', error);
+                if (isActive) {
+                    setIsConnecting(false);
+                    addToast(ToastType.Error, 'Não foi possível carregar o vídeo da live.');
+                }
+            }
         };
-    }, [streamer.id, streamer.hostId, currentUser.id, addToast, isBroadcaster]);
+
+        startViewerConnection();
+
+        return () => {
+            isActive = false;
+            if (viewerPcRef.current) {
+                viewerPcRef.current.close();
+                viewerPcRef.current = null;
+            }
+            if (remoteStreamRef.current) {
+                remoteStreamRef.current.getTracks().forEach(track => track.stop());
+                remoteStreamRef.current = null;
+            }
+            if (videoRef.current) {
+                videoRef.current.srcObject = null;
+            }
+        };
+    }, [streamer.id, streamer.streamUrl, addToast, isBroadcaster]);
 
     const isFollowed = useMemo(() => followingUsers.some(u => u.id === streamer.hostId), [followingUsers, streamer.hostId]);
     const isFanClubMember = useMemo(() => !!currentUser.fanClub && currentUser.fanClub.streamerId === streamer.hostId, [currentUser.fanClub, streamer.hostId]);

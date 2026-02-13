@@ -198,6 +198,7 @@ export const api = {
         updateConfigs: (config: string) => fetcher('PUT', '/v1/configs', config),
         getMetrics: () => fetcher('GET', '/v1/metrics'),
         rtcPublish: (sdp: string, streamUrl: string) => fetcher('POST', '/rtc/v1/publish', { sdp, streamUrl }),
+        rtcPlay: (sdp: string, streamUrl: string) => fetcher('POST', '/rtc/v1/play', { sdp, streamUrl }),
         trickleIce: (sessionId: string, candidate: any) => fetcher('POST', `/rtc/v1/trickle/${sessionId}`, candidate),
     },
     db: {
