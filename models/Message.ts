@@ -31,8 +31,8 @@ const MessageSchema = new Schema<IMessage>({
 }, { 
     timestamps: true,
     toJSON: {
-        transform: function(doc, ret) {
-            ret.id = ret._id;
+        transform: function (_doc, ret: { _id?: { toString(): string }; __v?: number; id?: string }) {
+            ret.id = ret._id?.toString();
             delete ret._id;
             delete ret.__v;
             return ret;
