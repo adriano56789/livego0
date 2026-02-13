@@ -7,7 +7,7 @@ class PurchaseController {
             const { userId } = req.params;
             
             // TODO: Replace with actual database query
-            const history = [];
+            const history: any[] = [];
             
             return sendSuccess(res, history, 'Purchase history retrieved successfully');
         } catch (error) {

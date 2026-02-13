@@ -1,0 +1,29 @@
+services:
+  coturn:
+    image: instrumentisto/coturn
+    container_name: coturn
+    network_mode: host
+    restart: always
+    environment:
+      - TZ=America/Sao_Paulo
+      - LISTENING_PORT=3478
+      - MIN_PORT=49152
+      - MAX_PORT=65535
+      - REALM=72.60.249.175
+      - STATIC_AUTH_SECRET=livego_sec_9x8y7z6a5b4c3d2e1f0g
+    command: >
+      --log-file=stdout
+      --no-stdout-log
+      --lt-cred-mech
+      --fingerprint
+      --use-auth-secret
+      --static-auth-secret=$$STATIC_AUTH_SECRET
+      --realm=$$REALM
+      --external-ip=72.60.249.175
+      --listening-port=$$LISTENING_PORT
+      --min-port=$$MIN_PORT
+      --max-port=$$MAX_PORT
+      --no-tls
+      --no-dtls
+    cap_add:
+      - NET_ADMIN
