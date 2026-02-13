@@ -178,27 +178,70 @@ export interface User {
 }
 
 export interface Streamer {
-  id: string;
-  hostId: string;
-  name: string;
-  avatar: string;
-  location: string;
-  viewers: number;
-  quality?: string;
-  isPrivate?: boolean;
-  category?: string;
-  description?: string;
-  thumbnail?: string;
-  time?: string; 
-  startedAt?: string; 
-  message?: string;
-  tags: string[];
-  country?: string;
-  language?: string;
-  isFollowed?: boolean;
-  relationship?: 'none' | 'following' | 'friend';
-  isLive?: boolean;
-  streamUrl?: string;
+    // Identificação
+    id: string;
+    hostId: string;
+    name: string;
+    avatar: string;
+    
+    // Informações básicas
+    location: string;
+    viewers: number;
+    isLive?: boolean;
+    status?: 'live' | 'ended' | 'scheduled';
+    
+    // Configurações de streaming
+    quality?: string;
+    isPrivate?: boolean;
+    category?: string;
+    description?: string;
+    thumbnail?: string;
+    time?: string;
+    startedAt?: string;
+    endedAt?: string;
+    duration?: number;
+    
+    // Metadados
+    message?: string;
+    tags: string[];
+    country?: string;
+    language?: string;
+    
+    // Relacionamento com o usuário atual
+    isFollowed?: boolean;
+    relationship?: 'none' | 'following' | 'friend';
+    
+    // URLs de streaming
+    streamUrl?: string;
+    rtmpUrl?: string;
+    hlsUrl?: string;
+    webrtcUrl?: string;
+    streamKey?: string;
+    
+    // Informações adicionais
+    coverUrl?: string;
+    title?: string;
+    streamerName?: string;
+    streamerAvatar?: string;
+    isHost?: boolean;
+    isCoHost?: boolean;
+    coHosts?: string[];
+    isMuted?: boolean;
+    isCameraOff?: boolean;
+    isScreenSharing?: boolean;
+    isRecording?: boolean;
+    streamStartedAt?: string;
+    streamEndedAt?: string;
+    streamDuration?: number;
+    streamQuality?: string;
+    streamBitrate?: number;
+    streamResolution?: string;
+    streamFps?: number;
+    streamCodec?: string;
+    streamLatency?: number;
+    streamStats?: any;
+    streamMetadata?: any;
+    streamSettings?: any;
 }
 
 export interface Gift {

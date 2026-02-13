@@ -130,6 +130,57 @@ class SrsService {
         const res = await this.request('GET', '/v1/clients');
         return res.clients || [];
     }
+
+    /**
+     * Publica um stream no SRS usando WebRTC
+     * @param options Opções de publicação
+     */
+    async publishStream(options: {
+        streamUrl: string;
+        sdpOffer: string;
+        stream: MediaStream;
+    }): Promise<{ sdp: string; sessionid: string }> {
+        const { streamUrl, sdpOffer } = options;
+        
+        // Primeiro, envia o SDP Offer
+        const response = await this.rtcPublish(sdpOffer, streamUrl);
+        
+        return {
+            sdp: response.sdp,
+            sessionid: response.sessionId
+        };
+    }
+
+    /**
+     * Envia um candidato ICE para o SRS (Trickle ICE)
+     * @param sessionId ID da sessão WebRTC
+     * @param candidate Candidato ICE a ser enviado
+     */
+    async trickleIce(sessionId: string, candidate: RTCIceCandidate): Promise<void> {
+        try {
+            await this.request('POST', `/rtc/v1/trickle/${sessionId}`, {
+                candidate: candidate.candidate,
+                sdpMid: candidate.sdpMid,
+                sdpMLineIndex: candidate.sdpMLineIndex
+            });
+        } catch (error) {
+            console.error('[SRS Service] Erro ao enviar candidato ICE:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Encerra uma sessão de streaming
+     * @param sessionId ID da sessão a ser encerrada
+     */
+    async endSession(sessionId: string): Promise<void> {
+        try {
+            await this.request('DELETE', `/rtc/v1/sessions/${sessionId}`);
+        } catch (error) {
+            console.error('[SRS Service] Erro ao encerrar sessão:', error);
+            throw error;
+        }
+    }
 }
 
 export const srsService = new SrsService();

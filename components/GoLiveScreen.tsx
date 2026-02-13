@@ -4,6 +4,7 @@ import { Streamer, User, ToastType } from '../types';
 import { useTranslation } from '../i18n';
 import { api } from '../services/api';
 import BeautyEffectsPanel from './live/BeautyEffectsPanel';
+import { streamingManager } from '../services/streamingManager';
 import { webSocketManager } from '../services/websocket';
 import { LoadingSpinner } from './Loading';
 
@@ -123,11 +124,19 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ currentUser, onClose, onSta
   }, [stream, step]);
 
   useEffect(() => {
-      return () => {
-          if (stream) {
-              stream.getTracks().forEach(track => track.stop());
-          }
-      };
+    return () => {
+      // Para a transmissão se estiver ativa
+      if (streamingManager.isStreaming()) {
+        streamingManager.stopStreaming().catch(e => 
+          console.error("Erro ao parar o streaming:", e)
+        );
+      }
+      
+      // Para o stream local
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
   }, [stream]);
 
   const handlePermissionAction = async (action: 'allow' | 'once' | 'deny') => {
@@ -169,34 +178,46 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ currentUser, onClose, onSta
     const roomName = `${currentUser.id}_${Date.now()}`;
     const streamData: Partial<Streamer> = {
         id: roomName,
-        hostId: currentUser.id, name: `Live de ${currentUser.name}`, avatar: currentUser.avatarUrl,
-        thumbnail: 'https://picsum.photos/seed/live/400/600', isPrivate: liveSettings.isPrivate,
+        hostId: currentUser.id, 
+        name: `Live de ${currentUser.name}`, 
+        avatar: currentUser.avatarUrl,
+        thumbnail: 'https://picsum.photos/seed/live/400/600', 
+        isPrivate: liveSettings.isPrivate,
         category: liveSettings.isPrivate ? 'Privada' : liveSettings.category,
-        description: `Live de ${currentUser.name}`, location: currentUser.location || 'Brasil'
+        description: `Live de ${currentUser.name}`, 
+        location: currentUser.location || 'Brasil',
+        status: 'live',
+        viewers: 0,
+        startedAt: new Date().toISOString(),
+        streamKey: roomName,
+        rtmpUrl: `rtmp://72.60.249.175/live/${roomName}`,
+        hlsUrl: `http://72.60.249.175:8080/live/${roomName}.m3u8`,
+        webrtcUrl: `webrtc://72.60.249.175/live/${roomName}`
     };
     
     try {
-        const srsRtcUrl = (import.meta as any).env.VITE_SRS_RTC_URL || 'webrtc://localhost/live';
-        const streamUrl = `${srsRtcUrl}/${roomName}`;
+        // Configura o StreamingManager
+        await streamingManager.startStreaming(stream, roomName);
         
-        addToast(ToastType.Info, "Conectando ao servidor de mídia WebRTC...");
-        await webSocketManager.startStreaming(stream, streamUrl);
+        // Notifica o backend sobre o início da transmissão
+        webSocketManager.emit('stream:started', streamData);
         
-        // RPC removed: await api.streams.startBroadcast({ streamId: streamData.id! });
-        
-        addToast(ToastType.Success, "Transmissão pública iniciada!");
-        
-        // Redireciona imediatamente para a sala
+        // Redireciona para a sala
         onStartStream(streamData);
         
-        // Notifica outros clientes
-        webSocketManager.emit('stream:started', streamData);
-
+        addToast(ToastType.Success, "Transmissão WebRTC iniciada com sucesso!");
+        
     } catch (error: any) {
-        console.error("Erro ao iniciar a arquitetura de streaming:", error);
-        addToast(ToastType.Error, `Falha na transmissão: ${error.message}`);
+        console.error("Erro ao iniciar a transmissão:", error);
+        addToast(ToastType.Error, `Falha ao iniciar a transmissão: ${error.message}`);
         setIsStreaming(false);
-        webSocketManager.stopStreaming();
+        
+        // Tenta parar o streaming em caso de erro
+        try {
+            await streamingManager.stopStreaming();
+        } catch (e) {
+            console.error("Erro ao parar o streaming após falha:", e);
+        }
     }
   };
 
