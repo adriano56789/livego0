@@ -28,6 +28,7 @@ router.get('/v1/metrics', srsController.getMetrics);
 
 // --- SRS WebRTC Signaling ---
 router.post('/rtc/v1/publish', authMiddleware, srsController.rtcPublish);
+router.post('/rtc/v1/play', authMiddleware, srsController.rtcPlay);
 router.post('/rtc/v1/trickle/:sessionId', srsController.trickleIce);
 
 // --- SRS Webhooks (Callbacks) ---

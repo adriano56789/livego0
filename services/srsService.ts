@@ -91,6 +91,31 @@ class SrsService {
     }
 
     /**
+     * Negocia a troca de SDP para reprodução WebRTC (WHEP-like).
+     */
+    async rtcPlay(sdp: string, streamUrl: string): Promise<{ sdp: string, sessionId: string }> {
+        const baseUrl = this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`;
+        const apiUrl = `${baseUrl}rtc/v1/play/`;
+
+        const payload = {
+            api: apiUrl,
+            streamurl: streamUrl,
+            sdp,
+        };
+
+        const response = await this.request('POST', '/rtc/v1/play/', payload);
+
+        if (!response.sdp) {
+            throw new Error('SRS não retornou o SDP Answer para reprodução.');
+        }
+
+        return {
+            sdp: response.sdp,
+            sessionId: response.sessionid,
+        };
+    }
+
+    /**
      * Recupera detalhes de um cliente específico pelo ID.
      */
     async getClient(clientId: string): Promise<any> {

@@ -59,6 +59,28 @@ export const srsController = {
         }
     },
 
+
+
+    rtcPlay: async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+        try {
+            const { sdp, streamUrl } = (req as any).body;
+            const userId = (req as AuthRequest).userId;
+
+            if (!userId) {
+                return sendError(res, "Não autenticado.", 401);
+            }
+
+            if (!sdp || !streamUrl) {
+                return sendError(res, "SDP e StreamURL são obrigatórios.", 400);
+            }
+
+            const resultado = await srsService.rtcPlay(sdp, streamUrl);
+            return sendSuccess(res, resultado);
+        } catch (error) {
+            next(error);
+        }
+    },
+
     trickleIce: async (req: ExpressRequest, res: ExpressResponse) => {
         // SRS geralmente não usa Trickle ICE via HTTP API padrão, 
         // ele espera o SDP completo. Se necessário, implementar lógica específica.
