@@ -18,7 +18,7 @@ import SettingsScreen from './components/screens/SettingsScreen';
 import SearchScreen from './components/SearchScreen';
 import VideoScreen from './components/screens/VideoScreen';
 import LanguageSelectionModal from './components/LanguageSelectionModal';
-import { api, storage } from './services/api';
+import { api, storage, fetcher } from './services/api';
 import { LoadingSpinner } from './components/Loading';
 import { webSocketManager } from './services/websocket';
 import { LanguageProvider } from './i18n';
@@ -72,13 +72,71 @@ const AppContent: React.FC = () => {
 
             if (savedUser && token) {
                 try {
+                    // Carrega os dados do usuário
                     const freshUser = await api.users.me();
                     setCurrentUser(freshUser);
                     setIsAuthenticated(true);
+                    
+                    // Conecta ao WebSocket
                     webSocketManager.connect(freshUser.id);
-                    if (freshUser.id) api.getVisitors(freshUser.id).then(visitorList => setVisitors(visitorList || [])).catch(() => setVisitors([]));
+                    
+                    // Carrega todos os dados necessários em paralelo
+                    try {
+                        // Atualiza status online
+                        await fetcher('POST', '/api/sim/status', { isOnline: true });
+                        
+                        // Obtém os dados iniciais em paralelo
+                        const [
+                            userData,
+                            messages,
+                            regions,
+                            gifts,
+                            streamHistory,
+                            purchaseHistory,
+                            followingUsers,
+                            fans,
+                            reminders,
+                            notificationSettings,
+                            pkConfig,
+                            dailyRanking,
+                            weeklyRanking,
+                            monthlyRanking,
+                            popularStreams
+                        ] = await Promise.all([
+                            // Dados do usuário
+                            api.users.me(),
+                            api.getMessages(freshUser.id),
+                            api.regions.list(),
+                            api.gifts.list(),
+                            api.getStreamHistory(),
+                            api.purchases.getHistory(freshUser.id),
+                            api.users.getFollowingUsers(freshUser.id),
+                            api.users.getFansUsers(freshUser.id),
+                            api.getReminders(),
+                            api.notifications.getSettings(freshUser.id),
+                            api.pk.getConfig(),
+                            
+                            // Rankings
+                            api.getDailyRanking(),
+                            api.getWeeklyRanking(),
+                            api.getMonthlyRanking(),
+                            
+                            // Streams populares
+                            api.streams.listByCategory('popular', '')
+                        ]);
+                        
+                        // Atualiza o estado com os dados obtidos
+                        setCurrentUser(userData);
+                        setVisitors(await api.getVisitors(freshUser.id));
+                        
+                        console.log('Todas as chamadas de API iniciais foram concluídas com sucesso!');
+                    } catch (error) {
+                        console.error('Erro ao carregar dados iniciais:', error);
+                        addToast(ToastType.Error, 'Alguns dados podem estar incompletos. Por favor, tente novamente.');
+                    }
+                    
                 } catch (e) {
-                    console.warn("Sessão expirada ou VPS offline.");
+                    console.error("Erro ao carregar dados iniciais:", e);
                     storage.clear();
                 }
             }

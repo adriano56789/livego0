@@ -1,4 +1,3 @@
-
 import express, { Request, Response } from 'express';
 import { authController } from '../controllers/authController.js';
 import { userController } from '../controllers/userController.js';
@@ -13,6 +12,7 @@ import { feedController } from '../controllers/feedController.js';
 import { rankingController } from '../controllers/rankingController.js';
 import { taskController } from '../controllers/taskController.js';
 import { miscController } from '../controllers/miscController.js';
+import { permissionController } from '../controllers/permissionController.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { sendSuccess } from '../utils/response.js';
 import { dbController } from '../controllers/dbController.js';
@@ -36,7 +36,17 @@ router.route('/auth/last-email')
   .get(authController.getLastEmail)
   .options((req, res) => res.status(200).end());
 
+// --- Sim ---
+router.post('/sim/status', authMiddleware, userController.updateOnlineStatus);
+
+// --- Permissions ---
+router.get('/permissions/camera/:userId', authMiddleware, permissionController.getCameraPermission);
+router.post('/permissions/camera/:userId', authMiddleware, permissionController.updateCameraPermission);
+router.get('/permissions/microphone/:userId', authMiddleware, permissionController.getMicrophonePermission);
+router.post('/permissions/microphone/:userId', authMiddleware, permissionController.updateMicrophonePermission);
+
 // --- Users ---
+router.get('/users/online', authMiddleware, userController.getOnlineUsers);
 router.get('/users/me', authMiddleware, userController.getMe);
 router.post('/users/me', authMiddleware, userController.updateMe);
 router.get('/users/search', authMiddleware, userController.search);
@@ -48,6 +58,13 @@ router.get('/users/:userId/following', authMiddleware, userController.getFollowi
 router.get('/users/:userId/visitors', authMiddleware, userController.getVisitors);
 router.post('/users/me/language', authMiddleware, userController.setLanguage);
 router.get('/users/me/withdrawal-history', authMiddleware, userController.getWithdrawalHistory);
+
+// --- Rankings ---
+router.get('/rankings/all', authMiddleware, rankingController.getCombinedRankings);
+router.get('/rankings/daily', authMiddleware, (req, res, next) => rankingController.getRanking('daily')(req, res, next));
+router.get('/rankings/weekly', authMiddleware, (req, res, next) => rankingController.getRanking('weekly')(req, res, next));
+router.get('/rankings/monthly', authMiddleware, (req, res, next) => rankingController.getRanking('monthly')(req, res, next));
+router.get('/rankings/fans', authMiddleware, rankingController.getTopFans);
 router.get('/users/me/blocklist', authMiddleware, userController.getBlocklist);
 router.post('/users/me/blocklist/:userId', authMiddleware, userController.blockUser);
 router.post('/users/me/blocklist/:userId/unblock', authMiddleware, userController.unblockUser);
@@ -127,12 +144,6 @@ router.post('/posts', authMiddleware, feedController.createPost);
 router.post('/posts/:postId/like', authMiddleware, feedController.likePost);
 router.post('/posts/:postId/comment', authMiddleware, feedController.addComment);
 router.get('/posts/:postId/comments', authMiddleware, feedController.getComments);
-
-// --- Ranking ---
-router.get('/ranking/daily', authMiddleware, rankingController.getRanking('daily'));
-router.get('/ranking/weekly', authMiddleware, rankingController.getRanking('weekly'));
-router.get('/ranking/monthly', authMiddleware, rankingController.getRanking('monthly'));
-router.get('/ranking/top-fans', authMiddleware, rankingController.getTopFans);
 
 // --- Tasks ---
 router.get('/tasks/quick-friends', authMiddleware, taskController.getQuickCompleteFriends);

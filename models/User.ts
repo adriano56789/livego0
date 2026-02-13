@@ -41,6 +41,14 @@ const UserSchema = new mongoose.Schema({
             filterSpam: { type: Boolean, default: true },
             autoTranslate: { type: Boolean, default: false }
         }
+    },
+    cameraPermission: {
+        status: { type: String, enum: ['granted', 'denied', 'prompt'], default: 'prompt' },
+        updatedAt: { type: Date, default: Date.now }
+    },
+    microphonePermission: {
+        status: { type: String, enum: ['granted', 'denied', 'prompt'], default: 'prompt' },
+        updatedAt: { type: Date, default: Date.now }
     }
 }, { 
     timestamps: true,

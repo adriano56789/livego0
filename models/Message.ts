@@ -31,11 +31,16 @@ const MessageSchema = new Schema<IMessage>({
 }, { 
     timestamps: true,
     toJSON: {
-        transform: function(doc, ret) {
-            ret.id = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            return ret;
+        transform: function(doc: any, ret: any) {
+            // Criando um novo objeto com as propriedades desejadas
+            const result = {
+                ...ret,
+                id: ret._id.toString()
+            };
+            // Removendo propriedades indesejadas
+            delete result._id;
+            delete result.__v;
+            return result;
         }
     }
 });

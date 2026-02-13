@@ -27,12 +27,49 @@ export interface Obra {
     comments?: any[];
 }
 
+export interface BillingAddress {
+    street: string;
+    number: string;
+    district: string;
+    city: string;
+    zip: string;
+}
+
+export interface CreditCardInfo {
+    last4: string;
+    brand: string;
+    expiry: string;
+}
+
+export interface UiSettings {
+    zoomLevel: number;
+}
+
 export interface ConnectedAccount {
     id: string;
     provider: 'google' | 'facebook';
     email: string;
     name: string;
     avatarUrl?: string;
+}
+
+export interface ApiUsers {
+    me(): Promise<User>;
+    get(id: string): Promise<User>;
+    update(id: 'me', data: Partial<User>): Promise<{ success: boolean, user: User }>;
+    getOnlineUsers(roomId: string): Promise<User[]>;
+    getFansUsers(id: string): Promise<User[]>;
+    getFriends(id: string): Promise<User[]>;
+    search(q: string): Promise<User[]>;
+    toggleFollow(id: string): Promise<any>;
+    getWithdrawalHistory(status: string): Promise<PurchaseRecord[]>;
+    blockUser(userId: string): Promise<{ success: boolean }>;
+    updateBillingAddress(address: Partial<BillingAddress>): Promise<any>;
+    updateCreditCard(card: Partial<CreditCardInfo>): Promise<any>;
+    updateUiSettings(settings: Partial<UiSettings>): Promise<any>;
+    setLanguage(code: string): Promise<{ success: boolean }>;
+    getFollowingUsers(id: string): Promise<User[]>;
+    updateOnlineStatus(isOnline: boolean): Promise<{ success: boolean }>;
 }
 
 export interface User {

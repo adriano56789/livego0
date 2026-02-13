@@ -215,5 +215,29 @@ export const userController = {
             const visitors = await UserModel.find({ id: { $in: visitorIds } });
             return sendSuccess(res, visitors);
         } catch (error) { next(error); }
+    },
+    
+    updateOnlineStatus: async (req: AuthRequest, res: Response, next: NextFunction) => {
+        try {
+            const { isOnline } = req.body;
+            if (typeof isOnline !== 'boolean') {
+                return sendError(res, "O campo 'isOnline' é obrigatório e deve ser um booleano.", 400);
+            }
+            
+            const updatedUser = await UserModel.findOneAndUpdate(
+                { id: req.userId },
+                { isOnline, lastSeenAt: isOnline ? new Date() : new Date() },
+                { new: true }
+            );
+            
+            if (!updatedUser) {
+                return sendError(res, "Usuário não encontrado.", 404);
+            }
+            
+            return sendSuccess(res, { success: true, isOnline });
+        } catch (error) {
+            console.error('Erro ao atualizar status online:', error);
+            next(error);
+        }
     }
 };

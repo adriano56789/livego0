@@ -130,15 +130,30 @@ const GoLiveScreen: React.FC<GoLiveScreenProps> = ({ currentUser, onClose, onSta
       };
   }, [stream]);
 
-  const handlePermissionAction = (action: 'allow' | 'once' | 'deny') => {
+  const handlePermissionAction = async (action: 'allow' | 'once' | 'deny') => {
       if (action === 'deny') {
           onClose();
           return;
       }
-      if (permissionStep === 'camera') {
-          setPermissionStep('mic');
-      } else {
-          setStep('setup');
+      
+      try {
+          if (permissionStep === 'camera') {
+              // Salva a permissão da câmera
+              await api.permissions.updateCamera(currentUser.id, { status: 'granted' });
+              setPermissionStep('mic');
+          } else {
+              // Salva a permissão do microfone e vai para a tela de configuração
+              await api.permissions.updateMicrophone(currentUser.id, { status: 'granted' });
+              setStep('setup');
+          }
+      } catch (error) {
+          console.error('Erro ao salvar permissão:', error);
+          // Continua mesmo com erro para não bloquear o fluxo
+          if (permissionStep === 'camera') {
+              setPermissionStep('mic');
+          } else {
+              setStep('setup');
+          }
       }
   };
 
