@@ -1,12 +1,29 @@
-
 import React from 'react';
-
-export const FramePinkLaceIcon = (props: any) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className}>
-    <circle cx="50" cy="50" r="45" stroke="#F9A8D4" strokeWidth="2" strokeDasharray="4 4" />
-    <path d="M50 5 Q60 5 65 15 Q70 25 80 25" stroke="#F472B6" strokeWidth="1" fill="none" />
-    <path d="M50 5 Q40 5 35 15 Q30 25 20 25" stroke="#F472B6" strokeWidth="1" fill="none" />
-    <path d="M50 95 Q60 95 65 85 Q70 75 80 75" stroke="#F472B6" strokeWidth="1" fill="none" />
-    <path d="M50 95 Q40 95 35 85 Q30 75 20 75" stroke="#F472B6" strokeWidth="1" fill="none" />
+export const FramePinkLaceIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <defs>
+      <linearGradient id="gradPinkLace" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#f9a8d4" />
+        <stop offset="100%" stopColor="#ec4899" />
+      </linearGradient>
+      <linearGradient id="gradDiamondLace" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#f0f9ff"/>
+        <stop offset="100%" stopColor="#bae6fd"/>
+      </linearGradient>
+    </defs>
+    <circle cx="50" cy="50" r="38" stroke="url(#gradPinkLace)" strokeWidth="3"/>
+    {[...Array(16)].map((_, i) => (
+      <path key={i} d="M50,10 C 55,15 45,15 50,20" stroke="#be185d" strokeWidth="1" transform={`rotate(${i * (360/16)} 50 50)`} />
+    ))}
+    {/* Diamonds */}
+    <g transform="translate(50 12) scale(0.8)">
+      <path d="M0 -8 L 6 0 L 0 4 L -6 0 Z" fill="url(#gradDiamondLace)" />
+    </g>
+    <g transform="translate(18 50) scale(0.8) rotate(90)">
+      <path d="M0 -8 L 6 0 L 0 4 L -6 0 Z" fill="url(#gradDiamondLace)" />
+    </g>
+     <g transform="translate(82 50) scale(0.8) rotate(-90)">
+      <path d="M0 -8 L 6 0 L 0 4 L -6 0 Z" fill="url(#gradDiamondLace)" />
+    </g>
   </svg>
 );

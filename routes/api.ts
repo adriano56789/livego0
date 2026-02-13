@@ -17,8 +17,13 @@ import { authMiddleware } from '../middleware/auth.js';
 import { sendSuccess } from '../utils/response.js';
 import { dbController } from '../controllers/dbController.js';
 import notificationController from '../controllers/notificationController';
+import pkController from '../controllers/pkController';
+import purchaseController from '../controllers/purchaseController';
 
 const router = express.Router();
+
+// --- PK ---
+router.get('/pk/config', authMiddleware, pkController.getConfig);
 
 // --- Status & DB ---
 router.get('/status', (req: Request, res: Response) => sendSuccess(res, { online: true }, "API Real LiveGo Ativa!"));
@@ -116,7 +121,7 @@ router.post('/streams/beauty-settings/log-tab', authMiddleware, streamController
 
 // --- Gifts & Wallet ---
 router.get('/gifts', authMiddleware, giftController.getAll);
-router.get('/purchases/history', authMiddleware, walletController.getPurchaseHistory);
+router.get('/purchases/history/:userId', authMiddleware, walletController.getPurchaseHistory);
 router.get('/gifts/gallery', authMiddleware, giftController.getGallery);
 router.post('/streams/:streamId/gift', authMiddleware, giftController.sendGift);
 router.post('/streams/:streamId/backpack-gift', authMiddleware, giftController.sendBackpackGift);

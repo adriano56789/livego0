@@ -135,9 +135,19 @@ export const walletController = {
 
     getPurchaseHistory: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            // Usa o ID do usuário do token JWT
+            const { userId } = req.params;
+            const requestingUserId = req.userId;
+            
+            // Check if the requesting user is an admin or the same user
+            const isAdmin = req.userRole === 'admin';
+            if (!isAdmin && userId !== requestingUserId) {
+                return sendError(res, 'Acesso não autorizado', 403);
+            }
+            
+            const targetUserId = isAdmin ? userId : requestingUserId;
+            
             const transactions = await TransactionModel.find({
-                userId: req.userId,
+                userId: targetUserId,
                 type: 'recharge',
                 status: 'completed'
             }).sort({ createdAt: -1 });

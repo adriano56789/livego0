@@ -22,11 +22,23 @@ export const getNotificationSettings = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
-    if (!Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ success: false, message: 'Invalid user ID' });
+    // Check if the user has permission to access these settings
+    const authReq = req as any; // Cast to any to access userId from auth middleware
+    const requestingUserId = authReq.userId;
+    
+    if (!requestingUserId) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
     }
     
-    const user = await UserModel.findById(userId).select('notificationSettings');
+    // Find user by custom ID (u-xxxx) or fall back to MongoDB _id
+    let user;
+    if (userId.startsWith('u-')) {
+      user = await UserModel.findOne({ id: userId }).select('notificationSettings');
+    } else if (Types.ObjectId.isValid(userId)) {
+      user = await UserModel.findById(userId).select('notificationSettings');
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid user ID format' });
+    }
     
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });

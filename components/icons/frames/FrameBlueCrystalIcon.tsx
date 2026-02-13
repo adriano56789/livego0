@@ -1,20 +1,17 @@
-
 import React from 'react';
 
-export const FrameBlueCrystalIcon = (props: any) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className}>
-    <defs>
-      <linearGradient id="crystalGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#60A5FA" />
-        <stop offset="1" stopColor="#2563EB" />
-      </linearGradient>
-    </defs>
-    <path d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z" stroke="url(#crystalGrad)" strokeWidth="4" fill="none" />
-    <circle cx="50" cy="5" r="4" fill="#93C5FD" />
-    <circle cx="95" cy="25" r="4" fill="#93C5FD" />
-    <circle cx="95" cy="75" r="4" fill="#93C5FD" />
-    <circle cx="50" cy="95" r="4" fill="#93C5FD" />
-    <circle cx="5" cy="75" r="4" fill="#93C5FD" />
-    <circle cx="5" cy="25" r="4" fill="#93C5FD" />
-  </svg>
+export const FrameBlueCrystalIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <circle cx="50" cy="50" r="40" stroke="#4338ca" strokeWidth="4" />
+        {/* Static Stars */}
+        <circle cx="50" cy="10" r="2" fill="white" />
+        <circle cx="20" cy="25" r="1.5" fill="white" />
+        <circle cx="80" cy="75" r="1.5" fill="white" />
+        <circle cx="30" cy="80" r="1" fill="white" />
+        <circle cx="70" cy="20" r="1" fill="white" />
+        {/* Animated Twinkling Stars */}
+        <circle cx="85" cy="50" r="2.5" fill="white" style={{ animation: `starlight-anim-opacity 3s infinite ${Math.random() * 3}s` }} />
+        <circle cx="15" cy="50" r="2" fill="white" style={{ animation: `starlight-anim-opacity 4s infinite ${Math.random() * 4}s` }} />
+        <circle cx="50" cy="90" r="2" fill="white" style={{ animation: `starlight-anim-opacity 5s infinite ${Math.random() * 5}s` }} />
+    </svg>
 );

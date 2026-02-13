@@ -1,19 +1,24 @@
-
 import React from 'react';
 
-export const FrameBlazingSunIcon = (props: any) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className}>
-    <defs>
-      <radialGradient id="sunGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(50 50) rotate(90) scale(50)">
-        <stop stopColor="#FDB813" />
-        <stop offset="1" stopColor="#F59E0B" />
-      </radialGradient>
-    </defs>
-    <circle cx="50" cy="50" r="48" stroke="url(#sunGrad)" strokeWidth="4" strokeDasharray="4 2" />
-    <circle cx="50" cy="50" r="52" stroke="#EF4444" strokeWidth="2" strokeOpacity="0.5" />
-    <path d="M50 0 L55 10 L50 20 L45 10 Z" fill="#F59E0B" />
-    <path d="M50 100 L55 90 L50 80 L45 90 Z" fill="#F59E0B" />
-    <path d="M0 50 L10 55 L20 50 L10 45 Z" fill="#F59E0B" />
-    <path d="M100 50 L90 55 L80 50 L90 45 Z" fill="#F59E0B" />
-  </svg>
+export const FrameBlazingSunIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <defs>
+            <linearGradient id="gradCelestialWing" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f5d0fe" />
+                <stop offset="100%" stopColor="#c084fc" />
+            </linearGradient>
+        </defs>
+        {/* Left Wing */}
+        <g transform="translate(0 30)">
+            <path d="M45,20 C 30,20 15,35 15,50 C 15,65 30,80 45,80" stroke="url(#gradCelestialWing)" strokeWidth="4" strokeLinecap="round" fill="none" />
+            <path d="M42,25 C 32,25 22,38 22,50 C 22,62 32,75 42,75" stroke="#e9d5ff" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+        </g>
+        {/* Right Wing */}
+        <g transform="translate(100 30) scale(-1, 1)">
+            <path d="M45,20 C 30,20 15,35 15,50 C 15,65 30,80 45,80" stroke="url(#gradCelestialWing)" strokeWidth="4" strokeLinecap="round" fill="none" />
+            <path d="M42,25 C 32,25 22,38 22,50 C 22,62 32,75 42,75" stroke="#e9d5ff" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+        </g>
+        {/* Center Gem */}
+        <circle cx="50" cy="15" r="5" fill="#f0abfc" stroke="#a855f7" strokeWidth="1" />
+    </svg>
 );

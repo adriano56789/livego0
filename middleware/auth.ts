@@ -4,6 +4,7 @@ import config from '../config/settings.js';
 
 export interface AuthRequest extends ExpressRequest {
     userId?: string;
+    userRole?: string;
     headers: any;
     body: any;
     params: any;

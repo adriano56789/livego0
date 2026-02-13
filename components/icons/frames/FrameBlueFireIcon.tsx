@@ -1,11 +1,19 @@
-
 import React from 'react';
 
-export const FrameBlueFireIcon = (props: any) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className}>
-    <circle cx="50" cy="50" r="46" stroke="#3B82F6" strokeWidth="2" />
-    <path d="M50 85 Q30 60 50 15 Q70 60 50 85" fill="none" stroke="#60A5FA" strokeWidth="2" />
-    <path d="M50 95 Q20 70 50 5 Q80 70 50 95" fill="none" stroke="#2563EB" strokeWidth="2" opacity="0.6" />
-    <circle cx="50" cy="50" r="54" stroke="#93C5FD" strokeWidth="1" strokeDasharray="2 4" />
-  </svg>
+export const FrameBlueFireIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <defs>
+            <linearGradient id="gradDragonScale" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="50%" stopColor="#3b82f6" />
+                <stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+            <path id="scale-path" d="M -5 0 C -2 -5, 2 -5, 5 0 C 2 5, -2 5, -5 0 Z" />
+        </defs>
+        {[...Array(12)].map((_, i) => (
+            <g key={i} transform={`rotate(${i * 30} 50 50)`}>
+                <use href="#scale-path" fill="url(#gradDragonScale)" transform="translate(50, 10) scale(1.2)" />
+            </g>
+        ))}
+    </svg>
 );
