@@ -49,6 +49,19 @@ const UserSchema = new mongoose.Schema({
     microphonePermission: {
         status: { type: String, enum: ['granted', 'denied', 'prompt'], default: 'prompt' },
         updatedAt: { type: Date, default: Date.now }
+    },
+    notificationSettings: {
+        newMessages: { type: Boolean, default: true },
+        streamerLive: { type: Boolean, default: true },
+        newFollower: { type: Boolean, default: true },
+        followedPosts: { type: Boolean, default: true },
+        pedido: { type: Boolean, default: true },
+        interactive: { type: Boolean, default: true },
+        push: { type: Boolean, default: true },
+        giftAlertsOnScreen: { type: Boolean, default: true },
+        giftSoundEffects: { type: Boolean, default: true },
+        giftLuxuryBanners: { type: Boolean, default: true },
+        updatedAt: { type: Date, default: Date.now }
     }
 }, { 
     timestamps: true,

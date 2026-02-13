@@ -16,6 +16,7 @@ import { permissionController } from '../controllers/permissionController.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { sendSuccess } from '../utils/response.js';
 import { dbController } from '../controllers/dbController.js';
+import notificationController from '../controllers/notificationController';
 
 const router = express.Router();
 
@@ -115,6 +116,7 @@ router.post('/streams/beauty-settings/log-tab', authMiddleware, streamController
 
 // --- Gifts & Wallet ---
 router.get('/gifts', authMiddleware, giftController.getAll);
+router.get('/purchases/history', authMiddleware, walletController.getPurchaseHistory);
 router.get('/gifts/gallery', authMiddleware, giftController.getGallery);
 router.post('/streams/:streamId/gift', authMiddleware, giftController.sendGift);
 router.post('/streams/:streamId/backpack-gift', authMiddleware, giftController.sendBackpackGift);
@@ -122,6 +124,10 @@ router.get('/wallet/balance', authMiddleware, walletController.getBalance);
 router.post('/users/:userId/purchase', authMiddleware, walletController.purchase);
 router.post('/wallet/confirm-purchase', authMiddleware, walletController.confirmPurchase);
 router.post('/wallet/cancel-purchase', authMiddleware, walletController.cancelPurchase);
+
+// --- Notifications ---
+router.get('/notifications/settings/:userId', authMiddleware, notificationController.getNotificationSettings);
+router.put('/notifications/settings/:userId', authMiddleware, notificationController.updateNotificationSettings);
 
 // --- Earnings ---
 router.post('/earnings/withdraw/calculate', authMiddleware, walletController.calculateWithdrawal);
@@ -145,6 +151,10 @@ router.post('/posts/:postId/like', authMiddleware, feedController.likePost);
 router.post('/posts/:postId/comment', authMiddleware, feedController.addComment);
 router.get('/posts/:postId/comments', authMiddleware, feedController.getComments);
 
+// --- Notifications ---
+router.get('/notifications/settings/:userId', authMiddleware, notificationController.getNotificationSettings);
+router.put('/notifications/settings/:userId', authMiddleware, notificationController.updateNotificationSettings);
+
 // --- Tasks ---
 router.get('/tasks/quick-friends', authMiddleware, taskController.getQuickCompleteFriends);
 router.post('/tasks/quick-friends/:friendId/complete', authMiddleware, taskController.completeQuickFriendTask);
@@ -152,6 +162,7 @@ router.post('/tasks/quick-friends/:friendId/complete', authMiddleware, taskContr
 // --- Assets ---
 router.get('/assets/music', authMiddleware, assetController.getMusic);
 router.get('/assets/frames', authMiddleware, assetController.getFrames);
+router.post('/assets/frames/set', authMiddleware, userController.setActiveFrame);
 
 // --- Misc ---
 router.post('/translate', authMiddleware, miscController.translate);

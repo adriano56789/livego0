@@ -36,6 +36,7 @@ import DatabaseScreen from './components/DatabaseScreen';
 import AppIntegrityTesterScreen from './components/screens/AppIntegrityTesterScreen';
 import FullApiCheckupScreen from './components/screens/FullApiCheckupScreen';
 import PaymentFeedbackScreen from './components/screens/PaymentFeedbackScreen';
+import ApiTracker from './components/ApiTracker';
 
 
 // Contador global para garantir IDs únicos nos toasts
@@ -86,10 +87,24 @@ const AppContent: React.FC = () => {
                         await fetcher('POST', '/api/sim/status', { isOnline: true });
                         
                         // Obtém os dados iniciais em paralelo
+                        const regions = [
+                            { id: 'global', name: 'Global' },
+                            { id: 'br', name: 'Brasil' },
+                            { id: 'co', name: 'Colômbia' },
+                            { id: 'us', name: 'EUA' },
+                            { id: 'mx', name: 'México' },
+                            { id: 'ar', name: 'Argentina' },
+                            { id: 'es', name: 'Espanha' },
+                            { id: 'ph', name: 'Filipinas' },
+                            { id: 'vn', name: 'Vietnã' },
+                            { id: 'in', name: 'Índia' },
+                            { id: 'id', name: 'Indonésia' },
+                            { id: 'tr', name: 'Turquia' }
+                        ];
+
                         const [
                             userData,
                             messages,
-                            regions,
                             gifts,
                             streamHistory,
                             purchaseHistory,
@@ -106,7 +121,6 @@ const AppContent: React.FC = () => {
                             // Dados do usuário
                             api.users.me(),
                             api.getMessages(freshUser.id),
-                            api.regions.list(),
                             api.gifts.list(),
                             api.getStreamHistory(),
                             api.purchases.getHistory(freshUser.id),
@@ -170,6 +184,8 @@ const AppContent: React.FC = () => {
     const [isDatabaseMonitorOpen, setIsDatabaseMonitorOpen] = useState(false);
     const [isIntegrityTesterOpen, setIsIntegrityTesterOpen] = useState(false);
     const [isFullApiCheckupOpen, setIsFullApiCheckupOpen] = useState(false);
+    const [isApiTrackerOpen, setIsApiTrackerOpen] = useState(false);
+    const [isHealthMonitorOpen, setIsHealthMonitorOpen] = useState(false);
     
     const [relTab, setRelTab] = useState<'following' | 'fans' | 'visitors'>('following');
     const [isRelOpen, setIsRelOpen] = useState(false);
@@ -520,6 +536,7 @@ const AppContent: React.FC = () => {
           {isDatabaseMonitorOpen && <DatabaseScreen onClose={() => setIsDatabaseMonitorOpen(false)} addToast={addToast} />}
           {isIntegrityTesterOpen && <AppIntegrityTesterScreen onClose={() => setIsIntegrityTesterOpen(false)} />}
           {isFullApiCheckupOpen && <FullApiCheckupScreen onClose={() => setIsFullApiCheckupOpen(false)} />}
+          {isApiTrackerOpen && <ApiTracker isVisible={isApiTrackerOpen} onClose={() => setIsApiTrackerOpen(false)} />}
 
           {isMarketOpen && currentUser && <MarketScreen onClose={() => setIsMarketOpen(false)} user={currentUser} updateUser={updateCurrentUser} onOpenWallet={(tab) => {setIsWalletOpen(true); setWalletTab(tab)}} addToast={addToast} />}
           {isLevelOpen && currentUser && <LevelScreen onClose={() => setIsLevelOpen(false)} currentUser={currentUser} />}
@@ -569,8 +586,8 @@ const AppContent: React.FC = () => {
                     onOpenSettings={() => handleOpenSettings()}
                     onOpenSupportChat={() => { /* Placeholder */ }}
                     onOpenAdminWallet={() => setIsAdminWalletOpen(true)}
-                    onOpenApiTracker={() => {}}
-                    onOpenHealthMonitor={() => {}}
+                    onOpenApiTracker={() => setIsApiTrackerOpen(true)}
+                    onOpenHealthMonitor={() => setIsHealthMonitorOpen(true)}
                     onOpenDatabaseMonitor={() => setIsDatabaseMonitorOpen(true)}
                     onOpenIntegrityTester={() => setIsIntegrityTesterOpen(true)}
                     onOpenFullApiCheckup={() => setIsFullApiCheckupOpen(true)}

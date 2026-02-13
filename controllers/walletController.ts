@@ -3,6 +3,7 @@ import { UserModel } from '../models/User.js';
 import { TransactionModel } from '../models/Transaction.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { AuthRequest } from '../middleware/auth.js';
+import { Request } from 'express';
 
 export const walletController = {
     getBalance: async (req: AuthRequest, res: Response) => {
@@ -128,6 +129,22 @@ export const walletController = {
              const user = await UserModel.findOne({id: req.userId});
             return sendSuccess(res, { success: true, user });
         } catch (error) {
+            next(error);
+        }
+    },
+
+    getPurchaseHistory: async (req: AuthRequest, res: Response, next: NextFunction) => {
+        try {
+            // Usa o ID do usuário do token JWT
+            const transactions = await TransactionModel.find({
+                userId: req.userId,
+                type: 'recharge',
+                status: 'completed'
+            }).sort({ createdAt: -1 });
+
+            return sendSuccess(res, transactions);
+        } catch (error) {
+            console.error('Erro ao buscar histórico de compras:', error);
             next(error);
         }
     }

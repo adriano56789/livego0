@@ -8,18 +8,44 @@ import { CommentModel } from '../models/Comment.js';
 export const feedController = {
     getFeedVideos: async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
         try {
-            const posts = await PostModel.find({}).sort({ createdAt: -1 }).limit(20).lean();
+            const posts = await PostModel.find({ type: 'video' }).sort({ createdAt: -1 }).limit(20).lean();
             const userIds = [...new Set(posts.map(p => p.userId))];
             const users = await UserModel.find({ id: { $in: userIds } }).lean();
             const usersMap = new Map(users.map(u => [u.id, u]));
             
-            const populatedPosts = posts.map(post => ({
-              ...post,
-              user: usersMap.get(post.userId) || { id: post.userId, name: 'Usuário Removido', avatarUrl: '' }
-            }));
+            const feedVideos = posts.map(post => {
+                const user = usersMap.get(post.userId) || { 
+                    id: post.userId, 
+                    name: 'Usuário Removido', 
+                    avatarUrl: '' 
+                };
+                
+                // Garante que temos um ID para usar no fallback e converte para string
+                const userId = String(user.id || post.userId || 'unknown');
+                
+                return {
+                    id: post.id,
+                    photoUrl: post.mediaUrl || '',
+                    url: post.mediaUrl || '', // Alias para compatibilidade
+                    thumbnailUrl: post.thumbnailUrl || post.mediaUrl || '',
+                    caption: post.caption || '',
+                    likesCount: post.likesCount || 0,
+                    commentCount: post.commentCount || 0,
+                    user: {
+                        id: userId,
+                        name: user.name || `Usuário ${userId.slice(0, 6)}`,
+                        avatarUrl: user.avatarUrl || '',
+                        // Usamos o name como username já que o modelo não tem username
+                        username: user.name || `user_${userId.slice(0, 6)}`
+                    },
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt
+                };
+            });
 
-            return sendSuccess(res, populatedPosts);
+            return sendSuccess(res, feedVideos);
         } catch (error) {
+            console.error('Error fetching feed videos:', error);
             next(error);
         }
     },

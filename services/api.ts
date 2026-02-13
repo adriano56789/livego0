@@ -213,12 +213,12 @@ export const api = {
     getMessages: (userId: string): Promise<any> => fetcher('GET', `/api/chats/stream/${userId}/messages`),
     
     // Stream history
-    getStreamHistory: (): Promise<any[]> => fetcher('GET', '/api/history/streams'),
-    clearStreamHistory: (): Promise<{ success: boolean }> => fetcher('DELETE', '/api/history/streams'),
+    getStreamHistory: (): Promise<any[]> => fetcher('GET', '/api/users/me/history'),
+    clearStreamHistory: (): Promise<{ success: boolean }> => fetcher('DELETE', '/api/users/me/history'),
     
     // Reminders
-    getReminders: (): Promise<Streamer[]> => fetcher('GET', '/api/reminders'),
-    removeReminder: (id: string): Promise<{ success: boolean }> => fetcher('DELETE', `/api/reminders/${id}`),
+    getReminders: (): Promise<Streamer[]> => fetcher('GET', '/api/users/me/reminders'),
+    removeReminder: (id: string): Promise<{ success: boolean }> => fetcher('DELETE', `/api/users/me/reminders/${id}`),
     
     // Rankings
     getCombinedRankings: (): Promise<{
@@ -236,8 +236,8 @@ export const api = {
     getQuickCompleteFriends: (): Promise<any[]> => fetcher('GET', '/api/quick-complete/friends'),
     completeQuickFriendTask: (friendId: string): Promise<{ success: boolean }> => fetcher('POST', '/api/quick-complete/complete', { friendId }),
     getMusicLibrary: (): Promise<MusicTrack[]> => fetcher('GET', '/api/music/library'),
-    getAvatarFrames: (): Promise<any[]> => fetcher('GET', '/api/avatar/frames'),
-    setActiveFrame: (userId: string, frameId: string): Promise<User> => fetcher('POST', '/api/avatar/frames/set', { userId, frameId }),
+    getAvatarFrames: (): Promise<any[]> => fetcher('GET', '/api/assets/frames'),
+    setActiveFrame: (userId: string, frameId: string): Promise<User> => fetcher('POST', '/api/assets/frames/set', { userId, frameId }),
     createFeedPost: (data: { mediaData: string; type: 'image' | 'video'; caption?: string }): Promise<{ success: boolean; user: User; post: FeedPhoto }> => fetcher('POST', '/api/feed/posts', data),
     getFeedVideos: (): Promise<FeedPhoto[]> => fetcher('GET', '/api/feed/videos'),
     likePost: (postId: string): Promise<{ success: boolean }> => fetcher('POST', `/api/feed/posts/${postId}/like`),
@@ -252,11 +252,6 @@ export const api = {
     notifications: {
         getSettings: (userId: string): Promise<NotificationSettings> => fetcher('GET', `/api/notifications/settings/${userId}`),
         updateSettings: (userId: string, settings: NotificationSettings): Promise<{ success: boolean }> => fetcher('PUT', `/api/notifications/settings/${userId}`, settings),
-    },
-    
-    // Regions
-    regions: {
-        list: (): Promise<Country[]> => fetcher('GET', '/api/regions'),
     },
     
     // Purchases
