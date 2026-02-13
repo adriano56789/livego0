@@ -77,9 +77,10 @@ app.use((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
 });
 
 const server = http.createServer(app);
+// Configuração do Socket.IO com CORS
 const io = new Server(server, { 
     cors: {
-        origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+        origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
         methods: ['GET', 'POST'],
         credentials: true
     },
@@ -88,14 +89,23 @@ const io = new Server(server, {
 
 setupWebSocket(io);
 
+// Middleware para adicionar io ao request
 app.use((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
     (req as any).io = io;
     next();
 });
 
+// Middleware de depuração para registrar todas as rotas acessadas
+app.use((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    console.log(`[DEBUG] Rota acessada: ${req.method} ${req.originalUrl}`);
+    next();
+});
+
+// Rotas da API
 app.use('/api', apiRoutes);
 app.use('/api', srsRoutes);
 
+// Rotas de verificação de status
 app.get('/health', (req: ExpressRequest, res: ExpressResponse) => {
     (res as any).status(200).send('OK');
 });
@@ -105,6 +115,12 @@ app.get('/', (req: ExpressRequest, res: ExpressResponse) => {
 });
 
 app.use(globalErrorHandler as any);
+
+// Middleware para registrar rotas não encontradas
+app.use((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    console.log(`[DEBUG] Rota não encontrada: ${req.method} ${req.originalUrl}`);
+    next();
+});
 
 const listenPort = 3000; // Porta alterada para 3000 para evitar conflito com o frontend
 

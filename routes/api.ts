@@ -31,7 +31,10 @@ router.post('/auth/register', authController.register);
 router.post('/auth/verify-email', authController.verifyEmail);
 router.post('/auth/logout', authController.logout);
 router.post('/auth/save-last-email', authController.saveLastEmail);
-router.get('/auth/last-email', authController.getLastEmail);
+// Handle both GET and OPTIONS for last-email to support CORS preflight
+router.route('/auth/last-email')
+  .get(authController.getLastEmail)
+  .options((req, res) => res.status(200).end());
 
 // --- Users ---
 router.get('/users/me', authMiddleware, userController.getMe);

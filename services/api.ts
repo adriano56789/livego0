@@ -110,7 +110,7 @@ export const api = {
         register: (data: any): Promise<{ email: string }> => fetcher('POST', '/auth/register', data),
         verifyEmail: (data: { email: string; code: string }): Promise<{ success: boolean }> => fetcher('POST', '/auth/verify-email', data),
         logout: () => fetcher('POST', '/auth/logout'),
-        getLastEmail: (): Promise<{ email: string }> => fetcher('GET', '/auth/last-email'),
+        getLastEmail: (): Promise<{ email: string }> => fetcher('GET', '/api/auth/last-email'),
         saveLastEmail: (email: string): Promise<void> => fetcher('POST', '/auth/save-last-email', { email }),
     },
     users: {

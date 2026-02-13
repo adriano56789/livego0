@@ -1,16 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 
-// Environment detection helpers
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isTesting = process.env.NODE_ENV === 'test';
-const isProduction = !isDevelopment && !isTesting; // Production by default
+// Forçar ambiente de desenvolvimento para garantir que o CORS funcione localmente
+const isDevelopment = true; // Forçar modo de desenvolvimento
+const isTesting = false;
+const isProduction = false;
 
-console.log(`[CORS] Environment: ${process.env.NODE_ENV || 'production (default)'}`);
+console.log(`[CORS] Ambiente: ${isDevelopment ? 'desenvolvimento' : 'produção'}`);
 
-// Environment-specific configurations
+// Configurações de origens permitidas
 const ENV_CONFIG = {
   development: {
     allowedOrigins: [
+      // URLs locais
       'http://localhost:*',
       'http://127.0.0.1:*',
       'http://0.0.0.0:*',
@@ -19,11 +20,21 @@ const ENV_CONFIG = {
       'https://127.0.0.1:*',
       'https://0.0.0.0:*',
       'https://[::1]:*',
-      'https://livego.store', // Also allow production domain in development for testing
+      
+      // Frontend local
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      
+      // Domínios de produção
+      'https://livego.store',
       'https://www.livego.store',
       'https://api.livego.store',
-      'http://localhost:5173', // Adicionado para o Vite dev server
-      'http://127.0.0.1:5173'  // Alternativa para localhost
+      
+      // Outros IPs/portas
+      'http://72.60.249.175:5173',
+      'http://72.60.249.175:3000',
+      'https://72.60.249.175:5173',
+      'https://72.60.249.175:3000'
     ]
   },
   test: {
@@ -67,11 +78,23 @@ const corsMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const isAllowedOrigin = (() => {
         // In development, allow all localhost and 127.0.0.1 variations
         if (isDevelopment) {
+            console.log('[CORS] Development mode - Checking origin:', origin);
+            
+            // First check if origin is explicitly listed
+            const isExplicitlyAllowed = ENV_CONFIG.development.allowedOrigins.some(pattern => {
+                const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
+                const matches = regex.test(origin);
+                if (matches) {
+                    console.log(`[CORS] Origin ${origin} matches allowed pattern: ${pattern}`);
+                }
+                return matches;
+            });
+            
+            // Then check if it's a localhost/127.0.0.1 variant
             const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)(:\d+)?$/.test(origin);
-            console.log(`[CORS] Development mode - Origin ${origin} is ${isLocal ? 'allowed' : 'blocked'}`);
-            return isLocal || ENV_CONFIG.development.allowedOrigins.some(pattern => 
-                new RegExp(`^${pattern.replace(/\*/g, '.*')}$`).test(origin)
-            );
+            
+            console.log(`[CORS] Development mode - isLocal: ${isLocal}, isExplicitlyAllowed: ${isExplicitlyAllowed}`);
+            return isLocal || isExplicitlyAllowed;
         }
         
         // In testing, only allow test domains and ports

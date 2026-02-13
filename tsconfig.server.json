@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./dist-server",
@@ -9,13 +9,17 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ESNext"],
+    "lib": ["ES2022"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
     "resolveJsonModule": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "noEmit": false
   },
   "include": [
     "server.ts",

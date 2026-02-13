@@ -6,19 +6,19 @@
   "scripts": {
     "dev": "concurrently \"npm:dev:frontend\" \"npm:dev:backend\"",
     "dev:frontend": "vite",
-    "dev:backend": "nodemon --exec \"node --no-warnings --loader ts-node/esm\" server.ts",
+    "dev:backend": "nodemon --exec \"node --no-warnings --import tsx --no-warnings\" server.ts",
     "build": "npm run server:build && npm run build:frontend",
     "build:frontend": "vite build",
     "preview": "vite preview",
-    "start": "node dist-server/server.js",
-    "server:start": "node dist-server/server.js",
+    "start": "node --no-warnings --import tsx dist-server/server.js",
+    "server:start": "node --no-warnings --import tsx dist-server/server.js",
     "server:build": "tsc -p tsconfig.server.json",
     "vps:deploy": "pm2 startOrRestart ecosystem.config.cjs --env production",
     "vps:stop": "pm2 stop ecosystem.config.cjs",
     "vps:delete": "pm2 delete ecosystem.config.cjs",
     "vps:logs": "pm2 logs livego-backend",
     "vps:status": "pm2 status",
-    "config:save-turn": "ts-node-esm scripts/saveTurnConfig.ts"
+    "config:save-turn": "node --import tsx scripts/saveTurnConfig.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sesv2": "^3.0.0",
@@ -68,6 +68,7 @@
     "rimraf": "^5.0.7",
     "tailwindcss": "^3.4.16",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.3"
   }
