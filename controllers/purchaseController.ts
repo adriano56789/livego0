@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { sendSuccess, sendError } from '../utils/response';
+import { sendSuccess, sendError } from '../utils/response.js';
 
 class PurchaseController {
     async getPurchaseHistory(req: Request, res: Response) {

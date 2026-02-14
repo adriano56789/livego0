@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { UserModel } from '../models/User.js';
-import { NotificationSettings } from '../types';
+import { NotificationSettings } from '../types.js';
 import { Types } from 'mongoose';
 
 // Default notification settings

@@ -1,0 +1,63 @@
+diff --git a/controllers/notificationController.ts b/controllers/notificationController.ts
+index abc1234..def5678 100644
+--- a/controllers/notificationController.ts
++++ b/controllers/notificationController.ts
+@@ -1,6 +1,6 @@
+ import { Request, Response } from 'express';
+-import { UserModel } from '../models/User';
+-import { NotificationSettings } from '../types';
++import { UserModel } from '../models/User.js';
++import { NotificationSettings } from '../types.js';
+ import { Types } from 'mongoose';
+ 
+ // Default notification settings
+diff --git a/controllers/pkController.ts b/controllers/pkController.ts
+index 1234567..89abcde 100644
+--- a/controllers/pkController.ts
++++ b/controllers/pkController.ts
+@@ -1,5 +1,5 @@
+ import { Request, Response } from 'express';
+-import { sendSuccess } from '../utils/response';
++import { sendSuccess } from '../utils/response.js';
+ 
+ class PKController {
+     async getConfig(req: Request, res: Response) {
+diff --git a/controllers/purchaseController.ts b/controllers/purchaseController.ts
+index 2345678..9bcdef0 100644
+--- a/controllers/purchaseController.ts
++++ b/controllers/purchaseController.ts
+@@ -1,5 +1,5 @@
+ import { Request, Response } from 'express';
+-import { sendSuccess, sendError } from '../utils/response';
++import { sendSuccess, sendError } from '../utils/response.js';
+ 
+ class PurchaseController {
+     async getPurchaseHistory(req: Request, res: Response) {
+diff --git a/routes/api.ts b/routes/api.ts
+index 3456789..0abcdef 100644
+--- a/routes/api.ts
++++ b/routes/api.ts
+@@ -17,9 +17,9 @@ import { permissionController } from '../controllers/permissionController.js';
+ import { authMiddleware } from '../middleware/auth.js';
+ import { sendSuccess } from '../utils/response.js';
+ import { dbController } from '../controllers/dbController.js';
+-import notificationController from '../controllers/notificationController';
+-import pkController from '../controllers/pkController';
+-import purchaseController from '../controllers/purchaseController';
++import notificationController from '../controllers/notificationController.js';
++import pkController from '../controllers/pkController.js';
++import purchaseController from '../controllers/purchaseController.js';
+ 
+ const router = express.Router();
+ 
+diff --git a/services/srsService.ts b/services/srsService.ts
+index 5678901..2345678 100644
+--- a/services/srsService.ts
++++ b/services/srsService.ts
+@@ -1,4 +1,5 @@
+-import config from '../config/settings';
++import type { RTCIceCandidate } from 'webrtc';
++import config from '../config/settings.js';
+ 
+ interface SrsResponse {
+     code: number;

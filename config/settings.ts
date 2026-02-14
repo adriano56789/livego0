@@ -13,7 +13,7 @@ const defaultSettings = {
 };
 
 // Only load environment variables on the server side
-const isServer = typeof window === 'undefined';
+const isServer = typeof globalThis.window === 'undefined';
 
 // Initialize settings with defaults
 const settings = { ...defaultSettings };

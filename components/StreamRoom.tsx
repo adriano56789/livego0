@@ -25,6 +25,8 @@ import FanClubEntryMessage from './live/FanClubEntryMessage';
 import UserMentionSuggestions from './live/UserMentionSuggestions';
 import PrivateChatScreen from './screens/PrivateChatScreen';
 import { LoadingSpinner } from './Loading';
+import { io, Socket } from 'socket.io-client';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ChatMessageType {
     id: number;
@@ -136,6 +138,9 @@ const LuckyGiftModal: React.FC<{ isOpen: boolean; onClose: () => void; giftPaylo
 export const StreamRoom: React.FC<StreamRoomProps> = ({ streamer, onRequestEndStream, onLeaveStreamView, onStartPKBattle, onViewProfile, currentUser, onOpenWallet, onFollowUser, onOpenPrivateChat, onOpenPrivateInviteModal, setActiveScreen, onOpenPKTimerSettings, onOpenFans, onOpenFriendRequests, updateUser, liveSession, updateLiveSession, logLiveEvent, onStreamUpdate, addToast, followingUsers, streamers, onSelectStream, onOpenVIPCenter, onOpenFanClubMembers }) => {
     const { t, language } = useTranslation();
     const videoRef = useRef<HTMLVideoElement>(null);
+    const pcRef = useRef<RTCPeerConnection | null>(null);
+    const socketRef = useRef<Socket | null>(null);
+    const [connectionError, setConnectionError] = useState<string | null>(null);
     const [isUiVisible, setIsUiVisible] = useState(true);
     const [isToolsOpen, setIsToolsOpen] = useState(false);
     const [isBeautyPanelOpen, setBeautyPanelOpen] = useState(false);
@@ -194,16 +199,144 @@ export const StreamRoom: React.FC<StreamRoomProps> = ({ streamer, onRequestEndSt
         return () => { isMounted = false; };
     }, [streamer.hostId]);
     
-    useEffect(() => {
-        // Lógica de conexão WebRTC removida.
-        // O componente agora aguarda uma implementação de cliente WebRTC para SRS.
-        setIsConnecting(false); 
 
-        // Limpeza
+    const setupWebRTC = useCallback(async () => {
+        if (!streamer.id || !videoRef.current || isConnecting) return;
+
+        setIsConnecting(true);
+        setConnectionError(null);
+
+        try {
+            const socket = io(process.env.VITE_WS_URL || 'http://localhost:3000', {
+                transports: ['websocket'],
+                query: {
+                    userId: currentUser.id,
+                    streamId: streamer.id
+                }
+            });
+
+            socketRef.current = socket;
+
+            const pc = new RTCPeerConnection({
+                iceServers: [
+                    {
+                        urls: [
+                            'stun:72.60.249.175:3478',
+                            'turn:72.60.249.175:3478'
+                        ],
+                        username: 'livego',
+                        credential: 'adriano123'
+                    }
+                ],
+                iceTransportPolicy: 'all',
+                iceCandidatePoolSize: 10,
+                bundlePolicy: 'max-bundle',
+                rtcpMuxPolicy: 'require'
+            });
+
+            pcRef.current = pc;
+
+            pc.ontrack = (event) => {
+                console.log('Received track:', event.track.kind);
+                if (!videoRef.current) return;
+
+                const stream = event.streams[0];
+                if (stream) {
+                    videoRef.current.srcObject = stream;
+                    videoRef.current.play().catch(e => {
+                        console.error('Error playing video:', e);
+                        setConnectionError('Failed to play video stream');
+                    });
+                }
+            };
+
+            pc.oniceconnectionstatechange = () => {
+                console.log('ICE connection state:', pc.iceConnectionState);
+                if (pc.iceConnectionState === 'failed' ||
+                    pc.iceConnectionState === 'disconnected' ||
+                    pc.iceConnectionState === 'closed') {
+                    setConnectionError('Connection to stream lost. Reconnecting...');
+                    setTimeout(setupWebRTC, 3000);
+                }
+            };
+
+            socket.on('sdp-offer', async (data: { sdp: RTCSessionDescriptionInit }) => {
+                try {
+                    if (!pcRef.current) return;
+
+                    await pcRef.current.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                    console.log('Set remote description');
+
+                    const answer = await pcRef.current.createAnswer();
+                    await pcRef.current.setLocalDescription(answer);
+
+                    socket.emit('sdp-answer', {
+                        sdp: pcRef.current.localDescription,
+                        streamId: streamer.id,
+                        userId: currentUser.id
+                    });
+                } catch (error) {
+                    console.error('Error handling SDP offer:', error);
+                    setConnectionError('Error setting up stream');
+                }
+            });
+
+            socket.on('ice-candidate', async (candidate: RTCIceCandidateInit) => {
+                try {
+                    if (pcRef.current && candidate) {
+                        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+                    }
+                } catch (error) {
+                    console.error('Error adding ICE candidate:', error);
+                }
+            });
+
+            socket.emit('request-stream', {
+                streamId: streamer.id,
+                userId: currentUser.id,
+                clientId: uuidv4()
+            });
+
+            return () => {
+                if (pcRef.current) {
+                    pcRef.current.close();
+                    pcRef.current = null;
+                }
+                if (socketRef.current) {
+                    socketRef.current.disconnect();
+                    socketRef.current = null;
+                }
+                if (videoRef.current) {
+                    videoRef.current.srcObject = null;
+                }
+            };
+        } catch (error) {
+            console.error('Error setting up WebRTC:', error);
+            setConnectionError('Failed to setup WebRTC connection');
+            setIsConnecting(false);
+        }
+    }, [streamer.id, currentUser.id, isConnecting]);
+
+    useEffect(() => {
+        if (!streamer.id) return;
+
+        const cleanup = setupWebRTC();
+
         return () => {
-            // Lógica de desconexão WebRTC (a ser implementada)
+            if (cleanup) cleanup.then(fn => fn && fn());
+            if (pcRef.current) {
+                pcRef.current.close();
+                pcRef.current = null;
+            }
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
+            if (videoRef.current) {
+                videoRef.current.srcObject = null;
+            }
         };
-    }, [streamer.id, streamer.hostId, currentUser.id, addToast, isBroadcaster]);
+    }, [streamer.id, setupWebRTC]);
 
     const isFollowed = useMemo(() => followingUsers.some(u => u.id === streamer.hostId), [followingUsers, streamer.hostId]);
     const isFanClubMember = useMemo(() => !!currentUser.fanClub && currentUser.fanClub.streamerId === streamer.hostId, [currentUser.fanClub, streamer.hostId]);
@@ -697,7 +830,40 @@ export const StreamRoom: React.FC<StreamRoomProps> = ({ streamer, onRequestEndSt
                  <img src={streamerDisplayUser.coverUrl} key={streamerDisplayUser.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="Stream background" />
             ) : (
                 <>
-                    <video ref={videoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover bg-black" />
+                    <>
+                        <video 
+                            ref={videoRef} 
+                            autoPlay 
+                            playsInline 
+                            className="absolute inset-0 w-full h-full object-cover bg-black" 
+                            onError={(e) => {
+                                console.error('Video error:', e);
+                                setConnectionError('Failed to load video stream');
+                            }}
+                        />
+                        {isConnecting && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70">
+                                <div className="text-white text-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-2"></div>
+                                    <p>Connecting to stream...</p>
+                                </div>
+                            </div>
+                        )}
+                        {connectionError && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70">
+                                <div className="text-white text-center p-4 bg-red-600 bg-opacity-80 rounded-lg">
+                                    <p className="font-bold">Connection Error</p>
+                                    <p className="text-sm">{connectionError}</p>
+                                    <button 
+                                        onClick={setupWebRTC}
+                                        className="mt-2 px-4 py-1 bg-white text-black rounded hover:bg-gray-200 text-sm"
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
                     {isConnecting && (
                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 gap-4">
                             <LoadingSpinner />

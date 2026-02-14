@@ -4,8 +4,14 @@ import type { Socket } from 'socket.io-client';
 // Usa a URL do ambiente ou fallback para localhost:3000
 const SOCKET_URL = (import.meta as any).env.VITE_WS_URL || 'http://localhost:3000';
 
-// Força o protocolo WebSocket para desenvolvimento local
-const WS_URL = SOCKET_URL.replace(/^http/, 'ws');
+// Força o protocolo WebSocket (ws:// para http:// e wss:// para https://)
+const WS_URL = SOCKET_URL.replace(/^http/, 'ws').replace(':3000', ':3001');
+
+// Configurações de reconexão
+const RECONNECTION_ATTEMPTS = 10;
+const RECONNECTION_DELAY = 1000;
+const RECONNECTION_DELAY_MAX = 5000;
+const TIMEOUT = 20000;
 
 console.log('[WebSocket] Conectando ao servidor WebSocket em:', WS_URL);
 
@@ -22,20 +28,39 @@ export class WebSocketManager {
         
         console.log(`[WebSocket] Iniciando conexão com ${WS_URL} para o usuário ${userId}`);
         
-        this.socket = io(WS_URL, {
-            query: { userId },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000,
-            timeout: 20000,
-            forceNew: true,
-            withCredentials: true,
-            extraHeaders: {
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
+        try {
+            console.log(`[WebSocket] Tentando conectar em: ${WS_URL}`);
+            
+            this.socket = io(WS_URL, {
+                query: { userId },
+                transports: ['websocket'], // Usando apenas WebSocket
+                reconnection: true,
+                reconnectionAttempts: RECONNECTION_ATTEMPTS,
+                reconnectionDelay: RECONNECTION_DELAY,
+                reconnectionDelayMax: RECONNECTION_DELAY_MAX,
+                timeout: TIMEOUT,
+                forceNew: true,
+                withCredentials: false, // Desative se não estiver usando credenciais
+                autoConnect: true,
+                path: '/socket.io/' // Certifique-se que corresponde ao path do servidor
+            });
+
+            // Configuração de eventos de erro
+            this.socket.on('connect_error', (error) => {
+                console.error('[WebSocket] Erro de conexão:', error);
+            });
+
+            this.socket.on('reconnect_attempt', (attempt) => {
+                console.log(`[WebSocket] Tentativa de reconexão ${attempt}/${RECONNECTION_ATTEMPTS}`);
+            });
+
+            this.socket.on('reconnect_failed', () => {
+                console.error('[WebSocket] Falha na reconexão. Número máximo de tentativas atingido.');
+            });
+        } catch (error) {
+            console.error('[WebSocket] Erro ao conectar:', error);
+            throw error;
+        }
 
         // Configuração de eventos do socket
         this.socket.on('connect', () => {

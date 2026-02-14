@@ -16,14 +16,17 @@ import { permissionController } from '../controllers/permissionController.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { sendSuccess } from '../utils/response.js';
 import { dbController } from '../controllers/dbController.js';
-import notificationController from '../controllers/notificationController';
-import pkController from '../controllers/pkController';
-import purchaseController from '../controllers/purchaseController';
+import notificationController from '../controllers/notificationController.js';
+import pkController from '../controllers/pkController.js';
+import purchaseController from '../controllers/purchaseController.js';
 
 const router = express.Router();
 
 // --- PK ---
 router.get('/pk/config', authMiddleware, pkController.getConfig);
+
+// --- Purchases ---
+router.get('/purchases/history/:userId', authMiddleware, purchaseController.getPurchaseHistory);
 
 // --- Status & DB ---
 router.get('/status', (req: Request, res: Response) => sendSuccess(res, { online: true }, "API Real LiveGo Ativa!"));

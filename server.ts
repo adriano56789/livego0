@@ -78,26 +78,69 @@ app.use((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
 });
 
 const server = http.createServer(app);
-// Configuração do Socket.IO com CORS
+
+// Configuração do Socket.IO com CORS aprimorada
 const io = new Server(server, { 
     cors: {
-        origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
-        methods: ['GET', 'POST', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        origin: [
+            'http://localhost:5173', 
+            'http://127.0.0.1:5173', 
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://127.0.0.1:3000',
+            'http://127.0.0.1:3001'
+        ],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
         credentials: true
     },
+    path: '/socket.io/',
     transports: ['websocket', 'polling'],
     allowEIO3: true,
-    pingTimeout: 10000,
-    pingInterval: 5000,
-    cookie: false
+    pingTimeout: 60000, // Aumentado para 60 segundos
+    pingInterval: 25000, // Aumentado para 25 segundos
+    cookie: false,
+    maxHttpBufferSize: 1e8, // 100MB para uploads grandes
+    serveClient: false,
+    connectTimeout: 45000, // 45 segundos para timeout de conexão
+    upgradeTimeout: 30000 // 30 segundos para upgrade de protocolo
 });
 
-// Log de conexões e desconexões
+// Configuração de eventos de conexão
+io.engine.on('connection_error', (err) => {
+    console.error('[Socket.IO] Erro na conexão:', err);
+});
+
+// Configuração dos manipuladores de conexão
 io.on('connection', (socket) => {
-    console.log(`[Socket.IO] Cliente conectado: ${socket.id}`);
+    const clientIp = socket.handshake.address;
+    console.log(`[Socket.IO] Cliente conectado:`, {
+        socketId: socket.id,
+        ip: clientIp,
+        query: socket.handshake.query,
+        headers: socket.handshake.headers
+    });
+
+    // Configuração de eventos de erro
+    socket.on('error', (error) => {
+        console.error(`[Socket.IO] Erro no socket ${socket.id}:`, error);
+    });
+
+    // Middleware para log de eventos
+    const originalEmit = socket.emit;
+    socket.emit = function(event: string, ...args: any[]) {
+        console.log(`[Socket.IO] Emitindo evento '${event}' para ${socket.id}`, args);
+        return originalEmit.apply(socket, [event, ...args]);
+    };
     
-    socket.on('disconnect', () => {
+    // Evento de desconexão
+    socket.on('disconnect', (reason) => {
+        console.log(`[Socket.IO] Cliente desconectado:`, {
+            socketId: socket.id,
+            reason: reason,
+            ip: clientIp,
+            rooms: Array.from(socket.rooms)
+        });
         console.log(`[Socket.IO] Cliente desconectado: ${socket.id}`);
     });
     

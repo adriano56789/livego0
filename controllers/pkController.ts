@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { sendSuccess } from '../utils/response';
+import { sendSuccess } from '../utils/response.js';
 
 class PKController {
     async getConfig(req: Request, res: Response) {

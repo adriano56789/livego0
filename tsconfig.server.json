@@ -9,17 +9,19 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "@types/webrtc"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     },
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "moduleDetection": "force",
-    "isolatedModules": false,
-    "noEmit": false
+    "isolatedModules": true,
+    "noEmit": false,
+    "allowJs": true
   },
   "include": [
     "server.ts",
